@@ -1,2 +1,5 @@
-src/terraform/.terraform/*
-src/terraform/.terraform
+src/.terraform/*
+src/.terraform
+src/terraform.tfstate*
+.local/*
+.local
