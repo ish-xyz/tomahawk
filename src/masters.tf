@@ -33,6 +33,7 @@ resource "aws_instance" "master" {
 	count = var.count_masters
 	key_name = aws_key_pair.k8s_bootstrap.key_name
 	instance_type = "t2.micro"
+
   	security_groups = [
 		  "${aws_security_group.ingress.name}"
 	]
@@ -54,7 +55,6 @@ resource "aws_instance" "master" {
 			host     	= self.public_ip
 		}
 	}
-
 }
 
 resource "aws_security_group" "ingress" {
