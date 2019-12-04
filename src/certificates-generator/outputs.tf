@@ -1,5 +1,5 @@
 output "key" {
-   value = tls_private_key.cert.private_key_pem
+   value = tls_private_key.service.private_key_pem
 }
 
 output "cert" {
