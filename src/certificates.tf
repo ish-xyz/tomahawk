@@ -1,9 +1,9 @@
 #
-module "ca" {
+module "init-ca" {
 	source 		= "./certificates-generator"
-	org			= "aws-k8s-lab-CA"
-	ou			= "aws-k8s-lab"
 	cn			= "CA"
+	org			= "aws-k8s-lab-init-CA"
+	ou			= "aws-k8s-lab"
 	country		= "United Kindgom"
 	location	= "London"
 	validity_period	= 8760
@@ -11,24 +11,74 @@ module "ca" {
 
 module "admin" {
 	source 		= "./certificates-generator"
+	cn			= "admin"
 	org			= "system:masters"
 	ou			= "aws-k8s-lab"
-	cn			= "admin"
-	ca_cert		= module.ca.ca_cert
-	ca_key		= module.ca.ca_key
+	ca_cert		= module.init-ca.ca_cert
+	ca_key		= module.init-ca.ca_key
 	country		= "United Kindgom"
 	location	= "London"
 	validity_period	= 8760
 }
 
-module "admin" {
+module "kube-controller-manager" {
 	source 		= "./certificates-generator"
-	org			= "system:masters"
+	cn			= "system:kube-controller-manager"
+	org			= "system:kube-controller-manager"
 	ou			= "aws-k8s-lab"
-	cn			= "admin"
-	ca_cert		= module.ca.ca_cert
-	ca_key		= module.ca.ca_key
+	ca_cert		= module.init-ca.ca_cert
+	ca_key		= module.init-ca.ca_key
 	country		= "United Kindgom"
 	location	= "London"
+	validity_period	= 8760
+}
+
+module "kube-proxy" {
+	source 		= "./certificates-generator"
+	cn			= "system:kube-proxy"
+	org			= "system:kube-proxy"
+	ou			= "aws-k8s-lab"
+	ca_cert		= module.init-ca.ca_cert
+	ca_key		= module.init-ca.ca_key
+	country		= "United Kindgom"
+	location	= "London"
+	validity_period	= 8760
+}
+
+module "kube-scheduler" {
+	source 		= "./certificates-generator"
+	cn			= "system:kube-scheduler"
+	org			= "system:kube-scheduler"
+	ou			= "aws-k8s-lab"
+	ca_cert		= module.init-ca.ca_cert
+	ca_key		= module.init-ca.ca_key
+	country		= "United Kindgom"
+	location	= "London"
+	validity_period	= 8760
+}
+
+module "service-accounts" {
+	source 		= "./certificates-generator"
+	cn			= "service-accounts"
+	org			= "Kubernetes"
+	ou			= "aws-k8s-lab"
+	ca_cert		= module.init-ca.ca_cert
+	ca_key		= module.init-ca.ca_key
+	country		= "United Kindgom"
+	location	= "London"
+	validity_period	= 8760
+}
+
+module "kubernetes" {
+	source 		= "./certificates-generator"
+	cn			= "Kubernetes"
+	org			= "Kubernetes"
+	ou			= "aws-k8s-lab"
+	ca_cert		= module.init-ca.ca_cert
+	ca_key		= module.init-ca.ca_key
+	country		= "United Kindgom"
+	location	= "London"
+	dns_names	= aws_instance.masters.*.public_dns
+	ip_addresses = concat(["10.32.0.1", "127.0.0.1"], aws_instance.masters.*.private_ip, aws_instance.masters.*.public_ip)
 	validity_period	= 8760
 }
