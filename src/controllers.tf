@@ -1,18 +1,3 @@
-variable "count_masters" {
-	type = number
-	default = 3
-}
-
-variable "vpc_id" {
-	type = string
-	default = "vpc-f670c791"
-}
-
-variable "environment" {
-	type = string
-	default = "development"
-}
-
 resource "tls_private_key" "bootstrap_key" {
 	algorithm = "RSA"
 }
@@ -28,19 +13,19 @@ resource "aws_key_pair" "k8s_bootstrap" {
 	public_key = tls_private_key.bootstrap_key.public_key_openssh
 }
 
-resource "aws_instance" "masters" {
+resource "aws_instance" "controllers" {
 
-	ami = "ami-0334a7a72f69e4d0f"
-	count = var.count_masters
+	ami = var.controllers_ami
+	count = var.controllers_count
 	key_name = aws_key_pair.k8s_bootstrap.key_name
 	instance_type = "t2.micro"
 
   	security_groups = [
-		  "${aws_security_group.ingress.name}"
+		  "${aws_security_group.controllers.name}"
 	]
 
 	tags = {
-		Name = "k8s-master-${count.index}"
+		Name = "kube-controller-${count.index}"
 		role = "master"
 		environment = var.environment
 	}
@@ -60,50 +45,18 @@ resource "aws_instance" "masters" {
 	}
 }
 
-resource "aws_security_group" "ingress" {
-
-	name = "allow-ssh"
-	vpc_id = var.vpc_id
-
-	ingress {
-		cidr_blocks = [
-			"0.0.0.0/0"
-		]
-		from_port = 22
-		to_port = 22
-		protocol = "tcp"
-	}
-
-	egress {
-		from_port = 0
-		to_port = 0
-		protocol = "-1"
-		cidr_blocks = ["0.0.0.0/0"]
-	}
-}
-
-resource "aws_security_group_rule" "allow_all" {
-  type			= "ingress"
-  from_port		= 0
-  to_port		= 65535
-  protocol		= "tcp"
-  cidr_blocks	= ["0.0.0.0/0"]
-
-  security_group_id = aws_security_group.ingress.id
-}
-
 resource "null_resource" "import_bootstrap_files" {
-	count = var.count_masters
+	count = var.controllers_count
 
 	triggers = {
-		cluster_instance_ids = "${join(",", aws_instance.masters.*.id)}"
+		cluster_instance_ids = "${join(",", aws_instance.controllers.*.id)}"
 	}
 
 	connection {
 		type     	= "ssh"
 		user     	= "centos"
 		private_key = tls_private_key.bootstrap_key.private_key_pem
-		host     	= element(aws_instance.masters.*.public_ip, count.index)
+		host     	= element(aws_instance.controllers.*.public_ip, count.index)
 	}
 
     #Import bootstrap scripts
@@ -187,24 +140,59 @@ resource "null_resource" "import_bootstrap_files" {
 }
 
 resource "null_resource" "bootstrap-etcd" {
-	count = var.count_masters
+	count = var.controllers_count
 	depends_on = [null_resource.import_bootstrap_files]
 
 	triggers = {
-		cluster_instance_ids = "${join(",", aws_instance.masters.*.id)}"
+		cluster_instance_ids = "${join(",", aws_instance.controllers.*.id)}"
 	}
 
 	connection {
 		type     	= "ssh"
 		user     	= "centos"
 		private_key = tls_private_key.bootstrap_key.private_key_pem
-		host     	= element(aws_instance.masters.*.public_ip, count.index)
+		host     	= element(aws_instance.controllers.*.public_ip, count.index)
 	}
 
 	provisioner "remote-exec" {
 		inline = [
 			"chmod +x ~/bootstrap/etcd_bootstrap.sh",
-			"echo 'sudo ./etcd_bootstrap.sh \"${join(" ", aws_instance.masters.*.private_ip)}\"' >> ~/command"
+			"cd ~/bootstrap && sudo ./etcd_bootstrap.sh \"${join(" ", aws_instance.controllers.*.private_ip)}\""
 		]
 	}
+}
+
+resource "aws_security_group" "controllers" {
+	name = "kube-controllers"
+	vpc_id = var.vpc_id
+}
+
+resource "aws_security_group_rule" "allow_egress_all" {
+  type              = "egress"
+  to_port           = 0
+  from_port         = 0
+  protocol          = "-1"
+  cidr_blocks	= ["0.0.0.0/0"]
+
+  security_group_id = aws_security_group.controllers.id
+}
+
+resource "aws_security_group_rule" "allow_etcd_ext" {
+  type			= "ingress"
+  from_port		= 2380
+  to_port		= 2380
+  protocol		= "tcp"
+  cidr_blocks	= ["0.0.0.0/0"]
+
+  security_group_id = aws_security_group.controllers.id
+}
+
+resource "aws_security_group_rule" "allow_ssh_ext" {
+  type			= "ingress"
+  from_port		= 22
+  to_port		= 22
+  protocol		= "tcp"
+  cidr_blocks	= ["0.0.0.0/0"]
+
+  security_group_id = aws_security_group.controllers.id
 }

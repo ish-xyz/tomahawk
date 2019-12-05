@@ -1,4 +1,5 @@
 src/.terraform/*
+src/installer/.bootstrap.pem
 src/.terraform
 src/terraform.tfstate*
 .local/*
