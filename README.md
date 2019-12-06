@@ -4,8 +4,8 @@
 
 **Controllers**
 * Bastion host ssh
-* Masters key rotation
-* Load balancer on controllers
-* Different availability zone for each controller
+* Controllers bootstrap key rotation or user input key
+* Load balancer on controllers and remove public_ips (certs and associate_public_ip=false)
+* Different availability zone for each controllers
 * Remote terraform state and lock
 * Fix security groups
