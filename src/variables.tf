@@ -23,17 +23,17 @@ variable "controllers_ami" {
 
 ##ALB
 
-variable "bucket_name" {
+variable "elb_bucket" {
 	type 	= string
 	default = "kube-controllers"
 }
 
-variable "bucket_prefix" {
+variable "elb_bucket_prefix" {
 	type 	= string
 	default = "alb-logs"
 }
 
-variable "alb_name" {
+variable "elb_name" {
 	type 	= string
 	default = "kube-controllers-alb"
 }
