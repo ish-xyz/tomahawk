@@ -86,7 +86,8 @@ module "kubernetes" {
   ca_key          = module.init-ca.ca_key
   country         = "United Kindgom"
   location        = "London"
-  dns_names       = aws_instance.controllers.*.public_dns
+#  dns_names       = concat(aws_instance.controllers.*.public_dns, var.kube_hostnames)
+  dns_names       = concat(aws_instance.controllers.*.public_dns, [aws_lb.controllers.dns_name], var.kube_hostnames)
   ip_addresses    = concat(["10.32.0.1", "127.0.0.1"], aws_instance.controllers.*.private_ip, aws_instance.controllers.*.public_ip)
   validity_period = 8760
 }
