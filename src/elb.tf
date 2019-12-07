@@ -27,7 +27,7 @@ resource "aws_s3_bucket" "elb_logs" {
 POLICY
 }
 
- 
+
 resource "aws_elb" "kube-controllers" {
   name    = var.elb_name
   subnets = aws_instance.controllers.*.subnet_id
