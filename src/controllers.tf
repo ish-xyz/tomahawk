@@ -196,3 +196,38 @@ resource "aws_security_group_rule" "allow_ssh_ext" {
 
   security_group_id = aws_security_group.controllers.id
 }
+
+resource "random_string" "ekey" {
+  length = 32
+  special = true
+  override_special = "/@£$"
+}
+
+data "template_file" "ekey" {
+  template = file("${path.module}/templates/encryption-config.yaml.tpl")
+  vars = {
+    ENCRYPTION_KEY = "${base64encode(random_string.ekey.result)}"
+  }
+}
+
+
+resource "null_resource" "scp_kube_configs" {
+	count = var.controllers_count
+
+	triggers = {
+		cluster_instance_ids = "${join(",", aws_instance.controllers.*.id)}",
+		template_file_id	 = data.template_file.ekey.rendered
+	}
+
+	connection {
+		type     	= "ssh"
+		user     	= "centos"
+		private_key = tls_private_key.bootstrap_key.private_key_pem
+		host     	= element(aws_instance.controllers.*.public_ip, count.index)
+	}
+
+	provisioner "file" {
+		content     = data.template_file.ekey.rendered
+		destination = "~/bootstrap/encryption-config.yaml"
+	}
+}
