@@ -1,8 +1,9 @@
 data "aws_elb_service_account" "main" {}
 
-resource "aws_s3_bucket" "alb_logs" {
-  bucket = var.bucket_name
-  acl    = "private"
+resource "aws_s3_bucket" "elb_logs" {
+  bucket        = var.elb_bucket
+  acl           = "private"
+  force_destroy = true
 
   policy = <<POLICY
 {
@@ -14,7 +15,7 @@ resource "aws_s3_bucket" "alb_logs" {
         "s3:PutObject"
       ],
       "Effect": "Allow",
-      "Resource": "arn:aws:s3:::${var.bucket_name}/${var.bucket_prefix}/*",
+      "Resource": "arn:aws:s3:::${var.elb_bucket}/${var.elb_bucket_prefix}/*",
       "Principal": {
         "AWS": [
           "${data.aws_elb_service_account.main.arn}"
@@ -27,30 +28,22 @@ POLICY
 }
 
  
-resource "aws_elb" "bar" {
-  name    = var.var.elb_name
+resource "aws_elb" "kube-controllers" {
+  name    = var.elb_name
   subnets = aws_instance.controllers.*.subnet_id
 
   access_logs {
-    bucket        = var.elb_bucket
+    bucket        = aws_s3_bucket.elb_logs.id
     bucket_prefix = var.elb_bucket_prefix
     interval      = 60
   }
 
   listener {
     instance_port     = 6443
-    instance_protocol = "http"
+    instance_protocol = "https"
     lb_port           = 6443
     lb_protocol       = "http"
   }
-
-  /*listener {
-    instance_port      = 8000
-    instance_protocol  = "http"
-    lb_port            = 443
-    lb_protocol        = "https"
-    ssl_certificate_id = "arn:aws:iam::123456789012:server-certificate/certName"
-  }*/
 
   health_check {
     healthy_threshold   = 2
@@ -60,11 +53,11 @@ resource "aws_elb" "bar" {
     interval            = 30
   }
 
-  instances                   = ["${aws_instance.controllers*.id}"]
+  instances                   = aws_instance.controllers.*.id
   cross_zone_load_balancing   = true
-  idle_timeout                = 120
+  idle_timeout                = 400
   connection_draining         = true
-  connection_draining_timeout = 60
+  connection_draining_timeout = 300
 
   tags = {
     Environment = var.environment

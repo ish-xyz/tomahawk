@@ -21,21 +21,21 @@ variable "controllers_ami" {
 	default = "ami-0334a7a72f69e4d0f"
 }
 
-##ALB
+##ELB
 
 variable "elb_bucket" {
 	type 	= string
-	default = "kube-controllers"
+	default = "kube-controllers-elb"
 }
 
 variable "elb_bucket_prefix" {
 	type 	= string
-	default = "alb-logs"
+	default = "logs"
 }
 
 variable "elb_name" {
 	type 	= string
-	default = "kube-controllers-alb"
+	default = "kube-controllers-elb"
 }
 # var.alb_subnets
 # var.alb_security_groups
