@@ -18,10 +18,11 @@ resource "aws_instance" "controllers" {
   ami           = var.controllers_ami
   count         = var.controllers_count
   key_name      = aws_key_pair.k8s_bootstrap.key_name
+  subnet_id     = element(var.controllers_subnets, count.index)
   instance_type = "t2.micro"
 
   security_groups = [
-    "${aws_security_group.controllers.name}"
+    "${aws_security_group.controllers.id}"
   ]
 
   tags = {
@@ -181,6 +182,16 @@ resource "aws_security_group_rule" "allow_etcd_ext" {
   type        = "ingress"
   from_port   = 2380
   to_port     = 2380
+  protocol    = "tcp"
+  cidr_blocks = ["0.0.0.0/0"]
+
+  security_group_id = aws_security_group.controllers.id
+}
+
+resource "aws_security_group_rule" "allow_kube_api_ext" {
+  type        = "ingress"
+  from_port   = 6443
+  to_port     = 6443
   protocol    = "tcp"
   cidr_blocks = ["0.0.0.0/0"]
 
