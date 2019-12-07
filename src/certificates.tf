@@ -1,6 +1,7 @@
-#
+#Create Certificate Authority
 module "init-ca" {
-  source          = "./certificates-generator"
+  source          = "ish-xyz/certificates-generator/tls"
+  version         = "0.1.0"
   cn              = "CA"
   org             = "aws-k8s-lab-init-CA"
   ou              = "aws-k8s-lab"
@@ -9,8 +10,10 @@ module "init-ca" {
   validity_period = 8760
 }
 
+#Generate certificates
 module "admin" {
-  source          = "./certificates-generator"
+  source          = "ish-xyz/certificates-generator/tls"
+  version         = "0.1.0"
   cn              = "admin"
   org             = "system:masters"
   ou              = "aws-k8s-lab"
@@ -22,7 +25,8 @@ module "admin" {
 }
 
 module "kube-controller-manager" {
-  source          = "./certificates-generator"
+  source          = "ish-xyz/certificates-generator/tls"
+  version         = "0.1.0"
   cn              = "system:kube-controller-manager"
   org             = "system:kube-controller-manager"
   ou              = "aws-k8s-lab"
@@ -34,7 +38,8 @@ module "kube-controller-manager" {
 }
 
 module "kube-proxy" {
-  source          = "./certificates-generator"
+  source          = "ish-xyz/certificates-generator/tls"
+  version         = "0.1.0"
   cn              = "system:kube-proxy"
   org             = "system:kube-proxy"
   ou              = "aws-k8s-lab"
@@ -46,7 +51,8 @@ module "kube-proxy" {
 }
 
 module "kube-scheduler" {
-  source          = "./certificates-generator"
+  source          = "ish-xyz/certificates-generator/tls"
+  version         = "0.1.0"
   cn              = "system:kube-scheduler"
   org             = "system:kube-scheduler"
   ou              = "aws-k8s-lab"
@@ -58,7 +64,8 @@ module "kube-scheduler" {
 }
 
 module "service-accounts" {
-  source          = "./certificates-generator"
+  source          = "ish-xyz/certificates-generator/tls"
+  version         = "0.1.0"
   cn              = "service-accounts"
   org             = "Kubernetes"
   ou              = "aws-k8s-lab"
@@ -70,7 +77,8 @@ module "service-accounts" {
 }
 
 module "kubernetes" {
-  source          = "./certificates-generator"
+  source          = "ish-xyz/certificates-generator/tls"
+  version         = "0.1.0"
   cn              = "Kubernetes"
   org             = "Kubernetes"
   ou              = "aws-k8s-lab"
