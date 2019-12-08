@@ -14,6 +14,11 @@ variable "kube_api_port" {
 	default = 6443
 }
 
+variable "project_name" {
+	type = string
+	default = "aws-k8s"
+}
+
 ## Controllers instances
 variable "controllers_count" {
   type    = number
