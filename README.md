@@ -3,9 +3,11 @@
 ### TODO
 
 **Controllers**
-* Bastion host ssh
+
 * Controllers bootstrap key rotation or user input key
-* Load balancer on controllers and remove public_ips (certs and associate_public_ip=false)
-* Different availability zone for each controllers
-* Remote terraform state and lock
-* Fix security groups
+* Remove associate_public_ip on controllers and implements SSH Bastion Host
+    * Fix controllers security group to enable only ingress from ALB and Bastion Host
+* Different subnet/az zone for each controllers [DONE]
+* Remote terraform state and terraform lock
+* ETCD boostrap.sh add desired state check
+* Null resource "import boostrap files" add triggers for files

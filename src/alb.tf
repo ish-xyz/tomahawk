@@ -7,8 +7,6 @@ resource "aws_lb" "controllers" {
   security_groups    = [aws_security_group.alb_allow.id]
   subnets            = var.controllers_subnets
 
-  #enable_deletion_protection = true
-
   access_logs {
     bucket  = aws_s3_bucket.alb_logs.bucket
     prefix  = var.alb_bucket_prefix
@@ -55,11 +53,6 @@ resource "aws_lb_target_group_attachment" "test" {
   target_id        = element(aws_instance.controllers.*.id, count.index)
   port             = var.kube_api_port
 }
-
-#resource "aws_lb_listener_certificate" "controllers" {
-#  listener_arn    = "${aws_lb_listener.controllers.arn}"
-#  certificate_arn = "${aws_iam_server_certificate.alb.arn}"
-#}
 
 resource "aws_s3_bucket" "alb_logs" {
   bucket        = var.alb_bucket
