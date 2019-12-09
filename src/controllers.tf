@@ -141,7 +141,25 @@ resource "null_resource" "import_bootstrap_files" {
   count = var.controllers_count
 
   triggers = {
-    cluster_instance_ids = "${join(",", aws_instance.controllers.*.id)}"
+    cluster_instance_ids         = "${join(",", aws_instance.controllers.*.id)}"
+    ca_cert                      = module.init-ca.ca_cert
+    ca_key                       = module.init-ca.ca_key
+    admin_cert                   = module.admin.cert
+    admin_key                    = module.admin.key
+    kube_controller_manager_cert = module.kube-controller-manager.cert
+    kube_controller_manager_key  = module.kube-controller-manager.key
+    kube_proxy_cert              = module.kube-proxy.cert
+    kube_proxy_key               = module.kube-proxy.key
+    kube_scheduler_cert          = module.kube-scheduler.cert
+    kube_scheduler_key           = module.kube-scheduler.key
+    service_accounts_cert        = module.service-accounts.cert
+    service_accounts_key         = module.service-accounts.key
+    kubernetes_cert              = module.kubernetes.cert
+    kubernetes_key               = module.kubernetes.key
+    tpl_kube_encryption          = data.template_file.kube-encryption.rendered
+    tpl_kube_controller_manager  = data.template_file.kube-controller-manager.rendered
+    tpl_kube_scheduler           = data.template_file.kube-scheduler.rendered
+    tpl_admin                    = data.template_file.admin.rendered
   }
 
   connection {
