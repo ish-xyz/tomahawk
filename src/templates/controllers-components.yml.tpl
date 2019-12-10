@@ -4,8 +4,12 @@ clusters:
     certificate-authority-data: ${ca_cert}
     server: https://127.0.0.1:6443
   name: ${project_name}
-contexts: []
-current-context: ""
+contexts:
+- context:
+    cluster: ${project_name}
+    user: ${component}
+  name: default
+current-context: default
 kind: Config
 preferences: {}
 users:

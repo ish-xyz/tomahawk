@@ -63,10 +63,10 @@ module "kube-scheduler" {
   validity_period = 8760
 }
 
-module "service-accounts" {
+module "service-account" {
   source          = "ish-xyz/certificates-generator/tls"
   version         = "0.1.0"
-  cn              = "service-accounts"
+  cn              = "service-account"
   org             = "Kubernetes"
   ou              = "aws-k8s-lab"
   ca_cert         = module.init-ca.ca_cert
