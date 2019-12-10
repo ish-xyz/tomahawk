@@ -1,3 +1,47 @@
+data "aws_vpc" "controllers" {
+  id = var.vpc_id
+}
+
+data "template_file" "kube-encryption" {
+  template = file("${path.module}/templates/kube-encryption.yml.tpl")
+  vars = {
+    encryption_key = "${base64encode(random_string.kube-encryption.result)}"
+  }
+}
+
+data "template_file" "kube-controller-manager" {
+  template = file("${path.module}/templates/kubeconfig.yml.tpl")
+  vars = {
+    project_name = var.project_name
+    client_cert  = base64encode(module.kube-controller-manager.cert)
+    client_key   = base64encode(module.kube-controller-manager.key)
+    ca_cert      = base64encode(module.init-ca.ca_cert)
+    user    = "system:kube-controller-manager"
+  }
+}
+
+data "template_file" "kube-scheduler" {
+  template = file("${path.module}/templates/kubeconfig.yml.tpl")
+  vars = {
+    project_name = var.project_name
+    client_cert  = base64encode(module.kube-scheduler.cert)
+    client_key   = base64encode(module.kube-scheduler.key)
+    ca_cert      = base64encode(module.init-ca.ca_cert)
+    user    = "system:kube-scheduler"
+  }
+}
+
+data "template_file" "admin" {
+  template = file("${path.module}/templates/kubeconfig.yml.tpl")
+  vars = {
+    project_name = var.project_name
+    client_cert  = base64encode(module.admin.cert)
+    client_key   = base64encode(module.admin.key)
+    ca_cert      = base64encode(module.init-ca.ca_cert)
+    user    = "admin"
+  }
+}
+
 resource "tls_private_key" "bootstrap_key" {
   algorithm = "RSA"
 }
@@ -38,6 +82,16 @@ resource "aws_security_group_rule" "allow_etcd_ext" {
   security_group_id = aws_security_group.controllers.id
 }
 
+resource "aws_security_group_rule" "allow_etcd_kapi" {
+  type        = "ingress"
+  from_port   = 2379
+  to_port     = 2379
+  protocol    = "tcp"
+  cidr_blocks = ["0.0.0.0/0"]
+
+  security_group_id = aws_security_group.controllers.id
+}
+
 resource "aws_security_group_rule" "allow_kube_api_ext" {
   type        = "ingress"
   from_port   = 6443
@@ -60,48 +114,7 @@ resource "aws_security_group_rule" "allow_ssh_ext" {
 
 resource "random_string" "kube-encryption" {
   length           = 32
-  special          = true
-  override_special = "/@£$"
-}
-
-data "template_file" "kube-encryption" {
-  template = file("${path.module}/templates/kube-encryption.yml.tpl")
-  vars = {
-    encryption_key = "${base64encode(random_string.kube-encryption.result)}"
-  }
-}
-
-data "template_file" "kube-controller-manager" {
-  template = file("${path.module}/templates/controllers-components.yml.tpl")
-  vars = {
-    project_name = var.project_name
-    client_cert  = base64encode(module.kube-controller-manager.cert)
-    client_key   = base64encode(module.kube-controller-manager.key)
-    ca_cert      = base64encode(module.init-ca.ca_cert)
-    component    = "system:kube-controller-manager"
-  }
-}
-
-data "template_file" "kube-scheduler" {
-  template = file("${path.module}/templates/controllers-components.yml.tpl")
-  vars = {
-    project_name = var.project_name
-    client_cert  = base64encode(module.kube-scheduler.cert)
-    client_key   = base64encode(module.kube-scheduler.key)
-    ca_cert      = base64encode(module.init-ca.ca_cert)
-    component    = "system:kube-scheduler"
-  }
-}
-
-data "template_file" "admin" {
-  template = file("${path.module}/templates/controllers-components.yml.tpl")
-  vars = {
-    project_name = var.project_name
-    client_cert  = base64encode(module.admin.cert)
-    client_key   = base64encode(module.admin.key)
-    ca_cert      = base64encode(module.init-ca.ca_cert)
-    component    = "admin"
-  }
+  special          = false
 }
 
 resource "aws_instance" "controllers" {
@@ -152,8 +165,8 @@ resource "null_resource" "import_bootstrap_files" {
     kube_proxy_key               = module.kube-proxy.key
     kube_scheduler_cert          = module.kube-scheduler.cert
     kube_scheduler_key           = module.kube-scheduler.key
-    service_accounts_cert        = module.service-accounts.cert
-    service_accounts_key         = module.service-accounts.key
+    service_account_cert         = module.service-account.cert
+    service_account_key          = module.service-account.key
     kubernetes_cert              = module.kubernetes.cert
     kubernetes_key               = module.kubernetes.key
     tpl_kube_encryption          = data.template_file.kube-encryption.rendered
@@ -173,6 +186,11 @@ resource "null_resource" "import_bootstrap_files" {
   provisioner "file" {
     source      = "${path.module}/installer/etcd_bootstrap.sh"
     destination = "~/bootstrap/etcd_bootstrap.sh"
+  }
+
+  provisioner "file" {
+    source      = "${path.module}/installer/control_plane_bootstrap.sh"
+    destination = "~/bootstrap/control_plane_bootstrap.sh"
   }
 
   #Import certs and keys
@@ -227,13 +245,13 @@ resource "null_resource" "import_bootstrap_files" {
   }
 
   provisioner "file" {
-    content     = module.service-accounts.cert
-    destination = "~/bootstrap/certs/service-accounts.pem"
+    content     = module.service-account.cert
+    destination = "~/bootstrap/certs/service-account.pem"
   }
 
   provisioner "file" {
-    content     = module.service-accounts.key
-    destination = "~/bootstrap/certs/service-accounts-key.pem"
+    content     = module.service-account.key
+    destination = "~/bootstrap/certs/service-account-key.pem"
   }
 
   provisioner "file" {
@@ -284,8 +302,9 @@ resource "null_resource" "bootstrap-etcd" {
 
   provisioner "remote-exec" {
     inline = [
-      "chmod +x ~/bootstrap/etcd_bootstrap.sh",
-      "cd ~/bootstrap && sudo ./etcd_bootstrap.sh \"${join(" ", aws_instance.controllers.*.private_ip)}\""
+      "chmod +x ~/bootstrap/*.sh",
+      "cd ~/bootstrap && sudo ./etcd_bootstrap.sh \"${join(" ", aws_instance.controllers.*.private_ip)}\"",
+      "cd ~/bootstrap && sudo ./control_plane_bootstrap.sh \"${join(" ", aws_instance.controllers.*.private_ip)}\" ${data.aws_vpc.controllers.cidr_block}"
     ]
   }
 }

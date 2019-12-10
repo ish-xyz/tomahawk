@@ -4,7 +4,7 @@
 
 set -e
 
-CLUSTER_MEMBERS=${1}
+CONTROLLERS=${1}
 LOCK_SB=1
 ETCD_URL="https://github.com/etcd-io/etcd/releases/download/v3.4.0/etcd-v3.4.0-linux-amd64.tar.gz"
 ETCD_CONFDIR="/etc/etcd"
@@ -17,16 +17,17 @@ INTERNAL_IP=$(curl http://169.254.169.254/latest/meta-data/local-ipv4)
 trap "rm -rf ${ETCD_URL##*/}  ./$(echo ${ETCD_URL##*/} | sed 's/\.tar\.gz//')" EXIT SIGTERM SIGKILL SIGINT
 
 log() {
+    # Logging function
+
     echo "$(date +"%m-%d-%Y::%H:%M:%S") ${1}"
 }
 
 init_checks() {
-
-    ## pre-etcd-bootstrap checks
+    # pre-etcd-bootstrap checks
 
     log "INFO: Checking requirements..."
 
-    if [[ -z ${CLUSTER_MEMBERS} ]]; then
+    if [[ -z ${CONTROLLERS} ]]; then
         log "ERROR: you need to pass the cluster members IPs"
         exit 1
     fi
@@ -37,9 +38,16 @@ init_checks() {
             exit 1
         fi
     done
+
+    if [[ -z $(which curl) ]]; then
+        log "ERROR: you must install curl to run this script."
+        exit 1
+    fi
 }
 
 lock_simultaneus_boostrap() {
+    # A distributed sleep lock, to avoid simoultaneus cluster initializations
+
     if [ $LOCK_SB == 1 ]; then
         log "INFO: Simultaneus bootstrap lock: active."
         #Sleep at max 49.999 sec
@@ -50,8 +58,9 @@ lock_simultaneus_boostrap() {
 }
 
 generate_initial_cluster() {
-    #Generate Initial Cluster string
-    MEMBERS=(${CLUSTER_MEMBERS})
+    # Generate Initial Cluster string
+
+    MEMBERS=(${CONTROLLERS})
     cn=0
     for IP in ${MEMBERS[@]}; do 
         [[ $IP == ${MEMBERS[0]} ]] && \
@@ -63,20 +72,17 @@ generate_initial_cluster() {
 }
 
 boostrap() {
-
-    ## Main function to run and bootstrap the etcd
+    # Main function to run and bootstrap the etcd
 
     init_checks
     lock_simultaneus_boostrap
 
     log "INFO: downloading etcd..."
-    if [[ -z $(which curl) ]]; then
-        log "ERROR: you must install curl to run this script."
-    fi
 
     curl -O -L ${ETCD_URL} && tar -xvf ${ETCD_URL##*/}
     if [[ $? != 0 ]]; then
         log "ERROR: etcd download failed."
+        exit 1
     fi
 
     log "INFO: installing etcd..."
@@ -92,7 +98,7 @@ boostrap() {
     generate_initial_cluster
 
     log "INFO: creating systemd unit files"
-    cat <<EOF | sed 's/    //' | sudo tee /etc/systemd/system/etcd.service
+    cat <<EOF | sed 's/    //' | tee /etc/systemd/system/etcd.service
     [Unit]
     Description=etcd
     Documentation=https://github.com/coreos
