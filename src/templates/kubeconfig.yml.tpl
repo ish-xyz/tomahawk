@@ -7,13 +7,13 @@ clusters:
 contexts:
 - context:
     cluster: ${project_name}
-    user: ${component}
+    user: ${user}
   name: default
 current-context: default
 kind: Config
 preferences: {}
 users:
-- name: ${component}
+- name: ${user}
   user:
     client-certificate-data: ${client_cert}
     client-key-data: ${client_key}

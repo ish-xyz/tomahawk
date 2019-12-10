@@ -10,35 +10,35 @@ data "template_file" "kube-encryption" {
 }
 
 data "template_file" "kube-controller-manager" {
-  template = file("${path.module}/templates/controllers-components.yml.tpl")
+  template = file("${path.module}/templates/kubeconfig.yml.tpl")
   vars = {
     project_name = var.project_name
     client_cert  = base64encode(module.kube-controller-manager.cert)
     client_key   = base64encode(module.kube-controller-manager.key)
     ca_cert      = base64encode(module.init-ca.ca_cert)
-    component    = "system:kube-controller-manager"
+    user    = "system:kube-controller-manager"
   }
 }
 
 data "template_file" "kube-scheduler" {
-  template = file("${path.module}/templates/controllers-components.yml.tpl")
+  template = file("${path.module}/templates/kubeconfig.yml.tpl")
   vars = {
     project_name = var.project_name
     client_cert  = base64encode(module.kube-scheduler.cert)
     client_key   = base64encode(module.kube-scheduler.key)
     ca_cert      = base64encode(module.init-ca.ca_cert)
-    component    = "system:kube-scheduler"
+    user    = "system:kube-scheduler"
   }
 }
 
 data "template_file" "admin" {
-  template = file("${path.module}/templates/controllers-components.yml.tpl")
+  template = file("${path.module}/templates/kubeconfig.yml.tpl")
   vars = {
     project_name = var.project_name
     client_cert  = base64encode(module.admin.cert)
     client_key   = base64encode(module.admin.key)
     ca_cert      = base64encode(module.init-ca.ca_cert)
-    component    = "admin"
+    user    = "admin"
   }
 }
 

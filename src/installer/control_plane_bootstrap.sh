@@ -153,7 +153,8 @@ reload_services() {
 
     log "INFO: enable and reload control plane services"
     systemctl daemon-reload
-    systemctl enable kube-apiserver.service
+    systemctl enable kube-apiserver.service \
+        kube-controller-manager.service
 }
 
 boostrap() {
@@ -181,6 +182,9 @@ boostrap() {
 
     log "INFO: starting kube-apiserver"
     systemctl start kube-apiserver.service
+
+    log "INFO: starting kube-controller-manager"
+    systemctl start kube-controller-manager.service
 
 }
 
