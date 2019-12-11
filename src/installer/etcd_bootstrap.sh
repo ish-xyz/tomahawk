@@ -98,7 +98,7 @@ boostrap() {
     generate_initial_cluster
 
     log "INFO: creating systemd unit files"
-    cat <<EOF | sed 's/    //' | sudo tee /etc/systemd/system/etcd.service
+    cat <<EOF | sed 's/    //' | tee /etc/systemd/system/etcd.service
     [Unit]
     Description=etcd
     Documentation=https://github.com/coreos
