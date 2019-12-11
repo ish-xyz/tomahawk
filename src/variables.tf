@@ -51,24 +51,19 @@ variable "controllers_ami" {
   default = "ami-0334a7a72f69e4d0f"
 }
 
-##Controllers ALB
+##Controllers nlb
 
-variable "alb_bucket" {
+variable "nlb_bucket" {
   type    = string
-  default = "kube-controllers-alb"
+  default = "kube-controllers-nlb"
 }
 
-variable "alb_bucket_prefix" {
+variable "nlb_bucket_prefix" {
   type    = string
   default = "logs"
 }
 
-variable "alb_name" {
+variable "nlb_name" {
   type    = string
-  default = "kube-controllers-alb"
-}
-
-variable "alb_ssl_policy" {
-	type = string
-	default = "ELBSecurityPolicy-2016-08"
+  default = "kube-controllers-nlb"
 }

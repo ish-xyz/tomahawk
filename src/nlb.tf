@@ -1,28 +1,27 @@
 data "aws_elb_service_account" "main" {}
 
 resource "aws_lb" "controllers" {
-  name               = var.alb_name
+  name               = var.nlb_name
   internal           = false
-  load_balancer_type = "application"
-  security_groups    = [aws_security_group.alb_allow.id]
+  load_balancer_type = "network"
   subnets            = var.controllers_subnets
 
   access_logs {
-    bucket  = aws_s3_bucket.alb_logs.bucket
-    prefix  = var.alb_bucket_prefix
+    bucket  = aws_s3_bucket.nlb_logs.bucket
+    prefix  = var.nlb_bucket_prefix
     enabled = true
   }
 
   tags = {
     Environment = var.environment
-    Name        = var.alb_name
+    Name        = var.nlb_name
   }
 }
 
 resource "aws_lb_target_group" "controllers" {
   name     = "kube-controllers-tg"
   port     = var.kube_api_port
-  protocol = "HTTPS"
+  protocol = "TCP"
   vpc_id   = var.vpc_id
 }
 
@@ -30,18 +29,15 @@ resource "aws_lb_target_group" "controllers" {
 resource "aws_lb_listener" "controllers" {
   load_balancer_arn = aws_lb.controllers.arn
   port              = var.kube_api_port
-  protocol          = "HTTPS"
-  ssl_policy        = var.alb_ssl_policy
-  certificate_arn   = aws_iam_server_certificate.alb.arn
-
+  protocol          = "TCP"
   default_action {
     type             = "forward"
     target_group_arn = aws_lb_target_group.controllers.arn
   }
 }
 
-resource "aws_iam_server_certificate" "alb" {
-  name             = "kube_controllers_alb_certificate"
+resource "aws_iam_server_certificate" "nlb" {
+  name             = "kube_controllers_nlb_certificate"
   certificate_body = module.kubernetes.cert
   private_key      = module.kubernetes.key
 }
@@ -54,8 +50,8 @@ resource "aws_lb_target_group_attachment" "test" {
   port             = var.kube_api_port
 }
 
-resource "aws_s3_bucket" "alb_logs" {
-  bucket        = var.alb_bucket
+resource "aws_s3_bucket" "nlb_logs" {
+  bucket        = var.nlb_bucket
   acl           = "private"
   force_destroy = true
 
@@ -65,31 +61,32 @@ resource "aws_s3_bucket" "alb_logs" {
   "Version": "2012-10-17",
   "Statement": [
     {
+      "Sid": "AWSLogDeliveryWrite",
       "Action": [
         "s3:PutObject"
       ],
       "Effect": "Allow",
-      "Resource": "arn:aws:s3:::${var.alb_bucket}/${var.alb_bucket_prefix}/*",
+      "Resource": "arn:aws:s3:::${var.nlb_bucket}/${var.nlb_bucket_prefix}/*",
       "Principal": {
-        "AWS": [
-          "${data.aws_elb_service_account.main.arn}"
-        ]
+        "Service": "delivery.logs.amazonaws.com"
+      },
+      "Condition": {
+        "StringEquals": {
+          "s3:x-amz-acl": "bucket-owner-full-control"
+        }
       }
+    },
+    {
+      "Sid": "AWSLogDeliveryAclCheck",
+      "Effect": "Allow",
+      "Principal": {
+        "Service": "delivery.logs.amazonaws.com"
+      },
+      "Action": "s3:GetBucketAcl",
+      "Resource": "arn:aws:s3:::${var.nlb_bucket}"
     }
   ]
 }
 POLICY
 }
 
-resource "aws_security_group" "alb_allow" {
-  name        = "alb_allow_traffic"
-  description = "ALB allow TLS traffic 6443/TCP"
-  vpc_id      = var.vpc_id
-
-  ingress {
-    from_port   = var.kube_api_port
-    to_port     = var.kube_api_port
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-}
