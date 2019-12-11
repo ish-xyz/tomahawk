@@ -16,7 +16,7 @@ data "template_file" "kube-controller-manager" {
     client_cert  = base64encode(module.kube-controller-manager.cert)
     client_key   = base64encode(module.kube-controller-manager.key)
     ca_cert      = base64encode(module.init-ca.ca_cert)
-    user    = "system:kube-controller-manager"
+    user         = "system:kube-controller-manager"
   }
 }
 
@@ -27,7 +27,7 @@ data "template_file" "kube-scheduler" {
     client_cert  = base64encode(module.kube-scheduler.cert)
     client_key   = base64encode(module.kube-scheduler.key)
     ca_cert      = base64encode(module.init-ca.ca_cert)
-    user    = "system:kube-scheduler"
+    user         = "system:kube-scheduler"
   }
 }
 
@@ -38,7 +38,7 @@ data "template_file" "admin" {
     client_cert  = base64encode(module.admin.cert)
     client_key   = base64encode(module.admin.key)
     ca_cert      = base64encode(module.init-ca.ca_cert)
-    user    = "admin"
+    user         = "admin"
   }
 }
 
@@ -113,12 +113,11 @@ resource "aws_security_group_rule" "allow_ssh_ext" {
 }
 
 resource "random_string" "kube-encryption" {
-  length           = 32
-  special          = false
+  length  = 32
+  special = false
 }
 
 resource "aws_instance" "controllers" {
-
   ami           = var.controllers_ami
   count         = var.controllers_count
   key_name      = aws_key_pair.k8s_bootstrap.key_name

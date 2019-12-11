@@ -20,7 +20,7 @@ resource "aws_lb" "controllers" {
 
 resource "aws_lb_target_group" "controllers" {
   name     = "kube-controllers-tg"
-  port     = var.kube_api_port
+  port     = 6443
   protocol = "TCP"
   vpc_id   = var.vpc_id
 }
@@ -28,11 +28,11 @@ resource "aws_lb_target_group" "controllers" {
 
 resource "aws_lb_listener" "controllers" {
   load_balancer_arn = aws_lb.controllers.arn
-  port              = var.kube_api_port
+  port              = 6443
   protocol          = "TCP"
   default_action {
     type             = "forward"
-    target_group_arn = aws_lb_target_group.controllers.arn
+    target_group_arn = aws_lb_target_group.controllers_api_ports.arn
   }
 }
 
@@ -47,7 +47,7 @@ resource "aws_lb_target_group_attachment" "test" {
   count            = var.controllers_count
   target_group_arn = aws_lb_target_group.controllers.arn
   target_id        = element(aws_instance.controllers.*.id, count.index)
-  port             = var.kube_api_port
+  port             = 6443
 }
 
 resource "aws_s3_bucket" "nlb_logs" {

@@ -1,4 +1,9 @@
-##Global
+## Global
+variable "project_name" {
+  type    = string
+  default = "aws-k8s"
+}
+
 variable "vpc_id" {
   type    = string
   default = "vpc-f670c791"
@@ -9,16 +14,6 @@ variable "environment" {
   default = "development"
 }
 
-variable "kube_api_port" {
-	type = number
-	default = 6443
-}
-
-variable "project_name" {
-	type = string
-	default = "aws-k8s"
-}
-
 ## Controllers instances
 variable "controllers_count" {
   type    = number
@@ -26,23 +21,23 @@ variable "controllers_count" {
 }
 
 variable "controllers_subnets" {
-	type 	= list
-	default = [
-		"subnet-0059f167",
-		"subnet-6c9a2b25",
-		"subnet-e712e6bc"
-	]
+  type = list
+  default = [
+    "subnet-0059f167",
+    "subnet-6c9a2b25",
+    "subnet-e712e6bc"
+  ]
 }
 
 variable "kube_hostnames" {
-	type = list
-	default = [
-		"kubernetes",
-		"kubernetes.default",
-		"kubernetes.default.svc",
-		"kubernetes.default.svc.cluster",
-		"kubernetes.svc.cluster.local"
-	]
+  type = list
+  default = [
+    "kubernetes",
+    "kubernetes.default",
+    "kubernetes.default.svc",
+    "kubernetes.default.svc.cluster",
+    "kubernetes.svc.cluster.local"
+  ]
 }
 
 
@@ -51,7 +46,7 @@ variable "controllers_ami" {
   default = "ami-0334a7a72f69e4d0f"
 }
 
-##Controllers nlb
+## NLB
 
 variable "nlb_bucket" {
   type    = string
@@ -66,4 +61,21 @@ variable "nlb_bucket_prefix" {
 variable "nlb_name" {
   type    = string
   default = "kube-controllers-nlb"
+}
+
+## Workers
+
+variable "workers_count" {
+  type    = number
+  default = 5
+}
+
+variable "workers_ami" {
+  type    = string
+  default = "ami-x"
+}
+
+variable "workers_subnet" {
+  type    = string
+  default = "ami-x"
 }
