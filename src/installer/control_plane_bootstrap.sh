@@ -215,8 +215,8 @@ boostrap() {
     log "INFO: starting kube-controller-manager..."
     systemctl start kube-controller-manager.service
 
-    log "INFO: starting kube-controller-manager..."
-    #systemctl start kube-scheduler.service
+    log "INFO: starting kube-scheduler..."
+    systemctl start kube-scheduler.service
 }
 
 boostrap
