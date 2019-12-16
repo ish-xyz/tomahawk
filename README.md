@@ -1,14 +1,29 @@
-## under development
+## DISCLAIMER: 
+### This project is under development. 
+### I'm developing this project during my spare time and mostly for a personal eductional purpose, so it might take a while to finish it or approve PRs and so on. 
+### As the license says, feel free to use it, and/or adapt it for your own needs.
 
-### TODO
+## Kubernetes on AWS
 
-**Controllers**
+**"Kubernetes on AWS"** is a Kubernetes boostrap system built with Terraform and BASH which will create and up&running fully encrypted Kubernetes cluster.
 
-* Controllers bootstrap key rotation or user input key
-* Remove associate_public_ip on controllers and implements SSH Bastion Host (Pay attentions to the provisioners)
-    * Fix controllers security group to enable only ingress from ALB, Bastion Host and controllers
-* Different subnet/az zone for each controllers [DONE]
-* Remote terraform state and terraform lock
-* ETCD boostrap.sh add desired state check [DONE]
-* Null resource "import boostrap files" add triggers for files [DONE]
-* Currently there's only one VPC both for controllers and workers (it needs more flexibility)
+The Terraform run will create/deploy the following components:
+
+* 3, 5 or more ec2 instances based on CentOS, which will serve as Kubernetes controllers.
+* 1 Network load balancer on top of the KubeControllers with a TCP health check on the instances
+* 3 security groups with the following details:
+    - x
+    - x
+* The certificates needed for: kube-proxy, etcd, admin, kube-controller-manager, kube-scheduler and service-account.
+* It will create an AWS KeyPair with dynamically generated public keys.
+* The required Kubernetes configuration for each controllers component using templates.
+
+The BASH startup scripts will create:
+- 
+
+## Usage:
+
+### Simple usage:
+
+### Complex usage:
+

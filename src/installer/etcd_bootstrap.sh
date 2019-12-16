@@ -13,6 +13,7 @@ CERTS_DIR="certs"
 REQUIRED_KEYS=("ca.pem" "kubernetes.pem" "kubernetes-key.pem")
 ETCD_NAME=$(hostname -s)
 INTERNAL_IP=$(curl http://169.254.169.254/latest/meta-data/local-ipv4)
+REQUIRED_PACKAGES=("curl" "yum")
 
 trap "rm -rf ${ETCD_URL##*/}  ./$(echo ${ETCD_URL##*/} | sed 's/\.tar\.gz//')" EXIT SIGTERM SIGKILL SIGINT
 
@@ -23,7 +24,7 @@ log() {
 }
 
 init_checks() {
-    # pre-etcd-bootstrap checks
+    # pre-bootstrap checks
 
     log "INFO: Checking requirements..."
 
@@ -34,24 +35,26 @@ init_checks() {
     
     for KEY in ${REQUIRED_KEYS[@]}; do
         if ! [[ -f "${CERTS_DIR}/${KEY}" ]]; then
-            log "ERROR: This is a full tls implementation. A TLS cert or key is missing ${CERTS_DIR}/${KEY}"
+            log "ERROR: This is a full tls implementation. A TLS cert or key is missing: ${CERTS_DIR}/${KEY}"
             exit 1
         fi
     done
 
-    if [[ -z $(which curl) ]]; then
-        log "ERROR: you must install curl to run this script."
-        exit 1
-    fi
+    for pkg in ${REQUIRED_PACKAGES[@]}; do
+        if [[ -z $(which ${pkg}) ]]; then
+            log "ERROR: you must have ${pkg} installed to run this script."
+            exit 1
+        fi
+    done
 }
 
 lock_simultaneus_boostrap() {
-    # A distributed sleep lock, to avoid simoultaneus cluster initializations
+    # A distributed sleep/lock, to avoid simoultaneus cluster initializations
 
-    if [ $LOCK_SB == 1 ]; then
+    if [[ $LOCK_SB == 1 ]]; then
         log "INFO: Simultaneus bootstrap lock: active."
-        #Sleep at max 49.999 sec
-        sleep $(( ${RANDOM:0:2} / 2 ))
+        #Sleep at max 19.999 sec
+        sleep $(( ${RANDOM:0:2} / 5 ))
     else
         log "INFO: Simultaneus bootstrap lock: disabled."
     fi

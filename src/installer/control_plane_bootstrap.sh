@@ -19,6 +19,7 @@ KUBE_CONFDIR="/etc/kubernetes/config"
 CLUSTER_IP_RANGE="10.32.0.0/24"
 BINARY_DIR="/usr/bin"
 INTERNAL_IP=$(curl http://169.254.169.254/latest/meta-data/local-ipv4)
+REQUIRED_PACKAGES=("curl" "yum")
 
 log() {
     # Logging function
@@ -27,20 +28,21 @@ log() {
 }
 
 init_checks() {
-    # pre-control-plane checks
+    # pre-bootstrap checks
 
     log "INFO: Checking requirements..."
-
-    if [[ -z $(which curl) ]]; then
-        log "ERROR: you must install curl to run this script."
-        exit 1
-    fi
+    for pkg in ${REQUIRED_PACKAGES[@]}; do
+        if [[ -z $(which ${pkg}) ]]; then
+            log "ERROR: you must have ${pkg} installed to run this script."
+            exit 1
+        fi
+    done
 }
 
 lock_simultaneus_boostrap() {
     # A distributed sleep lock, to avoid simoultaneus cluster initializations
 
-    if [ $LOCK_SB == 1 ]; then
+    if [[ $LOCK_SB == 1 ]]; then
         log "INFO: Simultaneus bootstrap lock: active."
         #Sleep at max 49.999 sec
         sleep $(( ${RANDOM:0:2} / 2 ))
