@@ -1,7 +1,7 @@
 ## Global
 variable "project_name" {
   type    = string
-  default = "aws-k8s"
+  default = "kubernetes-on-aws"
 }
 
 variable "vpc_id" {

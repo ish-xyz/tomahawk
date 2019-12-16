@@ -37,7 +37,7 @@ ${CA_KEY}
 EOF
     log "INFO: Create and sign certificate"
     openssl genrsa -out worker.key 2048
-    openssl req -new -key worker.key -out worker.csr -subj "/C=UK/ST=United Kingdom/L=London/O=aws-k8s-lab/OU=system:nodes/CN=system:nodes:worker"
+    openssl req -new -key worker.key -out worker.csr -subj "/C=${COUNTRY}/ST=${STATE}/L=${LOCATION}/O=${ORG}/OU=${OU}/CN=${CN}"
     cat <<EOF | tee worker.ext
 authorityKeyIdentifier=keyid,issuer
 basicConstraints=CA:FALSE

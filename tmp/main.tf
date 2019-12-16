@@ -88,8 +88,8 @@ module "init-ca" {
   source          = "ish-xyz/certificates-generator/tls"
   version         = "0.1.0"
   cn              = "CA"
-  org             = "aws-k8s-lab-init-CA"
-  ou              = "aws-k8s-lab"
+  org             = "kubernetes-on-aws-init-CA"
+  ou              = "kubernetes-on-aws"
   country         = "United Kindgom"
   location        = "London"
   validity_period = 8760
@@ -101,6 +101,12 @@ data "template_file" "workers_bootstrap" {
     CA_CERT = module.init-ca.ca_cert
     CA_KEY  = module.init-ca.ca_key
     CERT_VALIDITY = 8760
+    COUNTRY = "UK"
+    LOCATION = "London"
+    STATE = "United Kingdom"
+    ORG = "kubernetes-on-aws"
+    OU = "system:nodes"
+    CN = "system:nodes:worker"
   }
 }
 
