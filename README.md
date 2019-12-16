@@ -9,6 +9,6 @@
     * Fix controllers security group to enable only ingress from ALB, Bastion Host and controllers
 * Different subnet/az zone for each controllers [DONE]
 * Remote terraform state and terraform lock
-* ETCD boostrap.sh add desired state check
+* ETCD boostrap.sh add desired state check [DONE]
 * Null resource "import boostrap files" add triggers for files [DONE]
 * Currently there's only one VPC both for controllers and workers (it needs more flexibility)

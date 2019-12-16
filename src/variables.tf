@@ -67,15 +67,10 @@ variable "nlb_name" {
 
 variable "workers_count" {
   type    = number
-  default = 5
+  default = 3
 }
 
 variable "workers_ami" {
   type    = string
-  default = "ami-x"
-}
-
-variable "workers_subnet" {
-  type    = string
-  default = "ami-x"
+  default = "ami-0334a7a72f69e4d0f"
 }

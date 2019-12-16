@@ -4,5 +4,5 @@ src/.terraform
 src/terraform.tfstate*
 .local/*
 .local
-./tmp
-./tmp/*
+tmp/terraform.tfstate*
+tmp/.terraform
