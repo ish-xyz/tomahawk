@@ -17,6 +17,7 @@ data "template_file" "kube-controller-manager" {
     client_key   = base64encode(module.kube-controller-manager.key)
     ca_cert      = base64encode(module.init-ca.ca_cert)
     user         = "system:kube-controller-manager"
+    kube_address = "https://127.0.0.1:6443"
   }
 }
 
@@ -28,6 +29,7 @@ data "template_file" "kube-scheduler" {
     client_key   = base64encode(module.kube-scheduler.key)
     ca_cert      = base64encode(module.init-ca.ca_cert)
     user         = "system:kube-scheduler"
+    kube_address = "https://127.0.0.1:6443"
   }
 }
 
@@ -39,22 +41,23 @@ data "template_file" "admin" {
     client_key   = base64encode(module.admin.key)
     ca_cert      = base64encode(module.init-ca.ca_cert)
     user         = "admin"
+    kube_address = "https://127.0.0.1:6443"
   }
 }
 
-resource "tls_private_key" "bootstrap_key" {
+resource "tls_private_key" "controllers_ssh" {
   algorithm = "RSA"
 }
 
-resource "local_file" "bootstrap_private_key" {
-  content         = tls_private_key.bootstrap_key.private_key_pem
+resource "local_file" "controllers_ssh" {
+  content         = tls_private_key.controllers_ssh.private_key_pem
   filename        = "${path.module}/installer/.bootstrap.pem"
   file_permission = "0600"
 }
 
-resource "aws_key_pair" "k8s_bootstrap" {
-  key_name   = "k8s_bootstrap"
-  public_key = tls_private_key.bootstrap_key.public_key_openssh
+resource "aws_key_pair" "controllers_ssh" {
+  key_name   = "kube-controllers"
+  public_key = tls_private_key.controllers_ssh.public_key_openssh
 }
 
 resource "aws_security_group" "controllers" {
@@ -120,7 +123,7 @@ resource "random_string" "kube-encryption" {
 resource "aws_instance" "controllers" {
   ami           = var.controllers_ami
   count         = var.controllers_count
-  key_name      = aws_key_pair.k8s_bootstrap.key_name
+  key_name      = aws_key_pair.controllers_ssh.key_name
   subnet_id     = element(var.controllers_subnets, count.index)
   instance_type = "t2.micro"
 
@@ -137,7 +140,7 @@ resource "aws_instance" "controllers" {
   connection {
     type        = "ssh"
     user        = "centos"
-    private_key = tls_private_key.bootstrap_key.private_key_pem
+    private_key = tls_private_key.controllers_ssh.private_key_pem
     host        = self.public_ip
   }
 
@@ -160,8 +163,6 @@ resource "null_resource" "import_bootstrap_files" {
     admin_key                    = module.admin.key
     kube_controller_manager_cert = module.kube-controller-manager.cert
     kube_controller_manager_key  = module.kube-controller-manager.key
-    kube_proxy_cert              = module.kube-proxy.cert
-    kube_proxy_key               = module.kube-proxy.key
     kube_scheduler_cert          = module.kube-scheduler.cert
     kube_scheduler_key           = module.kube-scheduler.key
     service_account_cert         = module.service-account.cert
@@ -177,7 +178,7 @@ resource "null_resource" "import_bootstrap_files" {
   connection {
     type        = "ssh"
     user        = "centos"
-    private_key = tls_private_key.bootstrap_key.private_key_pem
+    private_key = tls_private_key.controllers_ssh.private_key_pem
     host        = element(aws_instance.controllers.*.public_ip, count.index)
   }
 
@@ -221,16 +222,6 @@ resource "null_resource" "import_bootstrap_files" {
   provisioner "file" {
     content     = module.kube-controller-manager.key
     destination = "~/bootstrap/certs/kube-controller-manager-key.pem"
-  }
-
-  provisioner "file" {
-    content     = module.kube-proxy.cert
-    destination = "~/bootstrap/certs/kube-proxy.pem"
-  }
-
-  provisioner "file" {
-    content     = module.kube-proxy.key
-    destination = "~/bootstrap/certs/kube-proxy-key.pem"
   }
 
   provisioner "file" {
@@ -295,7 +286,7 @@ resource "null_resource" "bootstrap-etcd" {
   connection {
     type        = "ssh"
     user        = "centos"
-    private_key = tls_private_key.bootstrap_key.private_key_pem
+    private_key = tls_private_key.controllers_ssh.private_key_pem
     host        = element(aws_instance.controllers.*.public_ip, count.index)
   }
 

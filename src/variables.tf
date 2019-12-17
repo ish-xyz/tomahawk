@@ -67,10 +67,18 @@ variable "nlb_name" {
 
 variable "workers_count" {
   type    = number
-  default = 3
+  default = 6
 }
 
 variable "workers_ami" {
   type    = string
   default = "ami-0334a7a72f69e4d0f"
+}
+
+variable "worker_tags" {
+  type = map
+  default = {
+    Name        = "kube-worker-asg"
+    Environment = "development"
+  }
 }

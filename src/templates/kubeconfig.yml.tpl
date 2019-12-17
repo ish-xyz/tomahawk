@@ -2,7 +2,7 @@ apiVersion: v1
 clusters:
 - cluster:
     certificate-authority-data: ${ca_cert}
-    server: https://127.0.0.1:6443
+    server: ${kube_address}
   name: ${project_name}
 contexts:
 - context:

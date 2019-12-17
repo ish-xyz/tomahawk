@@ -1,11 +1,63 @@
+
+data "aws_subnet_ids" "workers" {
+  vpc_id = var.vpc_id
+}
+
+data "template_file" "kube-proxy" {
+  template = file("${path.module}/templates/kubeconfig.yml.tpl")
+  vars = {
+    project_name = var.project_name
+    client_cert  = base64encode(module.kube-proxy.cert)
+    client_key   = base64encode(module.kube-proxy.key)
+    ca_cert      = base64encode(module.init-ca.ca_cert)
+    user         = "system:kube-proxy"
+    kube_address = "https://${aws_lb.controllers.dns_name}:6443"
+  }
+}
+
+data "template_file" "workers_bootstrap" {
+  template = file("${path.module}/templates/workers-bootstrap.sh.tpl")
+  vars = {
+    CA_CERT           = module.init-ca.ca_cert
+    CA_KEY            = module.init-ca.ca_key
+    CERT_VALIDITY     = 8760
+    COUNTRY           = "UK"
+    LOCATION          = "London"
+    STATE             = "United Kingdom"
+    ORG               = var.project_name
+    OU                = "system:nodes"
+    CN                = "system:nodes:worker"
+    PROJECT_NAME      = var.project_name
+    KUBECONFIG_PROXY  = ""
+    KUBE_ADDRESS      = "https://google.com:6443"
+  }
+}
+
+resource "tls_private_key" "workers_ssh" {
+  algorithm = "RSA"
+}
+
+resource "local_file" "workers_ssh" {
+  content         = tls_private_key.workers_ssh.private_key_pem
+  filename        = "${path.module}/installer/.workers.pem"
+  file_permission = "0600"
+}
+
+resource "aws_key_pair" "workers_ssh" {
+  key_name   = "kube-workers"
+  public_key = tls_private_key.workers_ssh.public_key_openssh
+}
+
 resource "aws_launch_configuration" "worker" {
-  name_prefix = "worker-"
 
-  image_id                    = var.workers_ami
-  instance_type               = "t2.micro"
-  security_groups             = ["${aws_security_group.workers.id}"]
+  name_prefix = "kube-workers-"
 
-  user_data = ""
+  image_id        = var.workers_ami
+  instance_type   = "t2.micro"
+  security_groups = ["${aws_security_group.workers.id}"]
+  key_name        = aws_key_pair.workers_ssh.key_name 
+
+  user_data = data.template_file.workers_bootstrap.rendered
 
   lifecycle {
     create_before_destroy = true
@@ -24,22 +76,32 @@ resource "aws_security_group_rule" "allow_all" {
   protocol    = "tcp"
   cidr_blocks = ["0.0.0.0/0"]
 
-  security_group_id = aws_security_group.controllers.id
+  security_group_id = aws_security_group.workers.id
 }
 
 resource "aws_autoscaling_group" "worker" {
 
-  name = "${aws_launch_configuration.worker.name}-asg"
+  name = aws_launch_configuration.worker.name
 
-  min_size             = 10
-  desired_capacity     = 15
-  max_size             = 25
+  min_size             = 4
+  desired_capacity     = 4
+  max_size             = 4
   health_check_type    = "EC2"
-  launch_configuration = "${aws_launch_configuration.worker.name}"
-  vpc_zone_identifier  = ["${aws_subnet.public.*.id}"]
+  launch_configuration = aws_launch_configuration.worker.name
+  vpc_zone_identifier  = data.aws_subnet_ids.workers.ids
 
-  # Required to redeploy without an outage.
+
   lifecycle {
     create_before_destroy = true
+  }
+
+  dynamic "tag" {
+    for_each = var.worker_tags
+    iterator = asg_tag
+    content {
+      key                 = asg_tag.key
+      value               = asg_tag.value
+      propagate_at_launch = true
+    }
   }
 }

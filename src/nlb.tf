@@ -32,7 +32,7 @@ resource "aws_lb_listener" "controllers" {
   protocol          = "TCP"
   default_action {
     type             = "forward"
-    target_group_arn = aws_lb_target_group.controllers_api_ports.arn
+    target_group_arn = aws_lb_target_group.controllers.arn
   }
 }
 
