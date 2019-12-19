@@ -28,7 +28,7 @@ data "template_file" "workers_bootstrap" {
     OU                = "system:nodes"
     CN                = "system:nodes:worker"
     PROJECT_NAME      = var.project_name
-    KUBECONFIG_PROXY  = ""
+    KUBECONFIG_PROXY  = data.template_file.kube-proxy.rendered
     KUBE_ADDRESS      = "https://google.com:6443"
   }
 }
@@ -57,7 +57,7 @@ resource "aws_launch_configuration" "worker" {
   security_groups = ["${aws_security_group.workers.id}"]
   key_name        = aws_key_pair.workers_ssh.key_name 
 
-  user_data = data.template_file.workers_bootstrap.rendered
+  user_data_base64 = base64encode(data.template_file.workers_bootstrap.rendered)
 
   lifecycle {
     create_before_destroy = true
@@ -69,11 +69,21 @@ resource "aws_security_group" "workers" {
   vpc_id = var.vpc_id
 }
 
-resource "aws_security_group_rule" "allow_all" {
+resource "aws_security_group_rule" "workers_allow_ingress_all" {
   type        = "ingress"
   from_port   = 0
-  to_port     = 65535
-  protocol    = "tcp"
+  to_port     = 0
+  protocol    = "-1"
+  cidr_blocks = ["0.0.0.0/0"]
+
+  security_group_id = aws_security_group.workers.id
+}
+
+resource "aws_security_group_rule" "workers_allow_egress_all" {
+  type        = "egress"
+  to_port     = 0
+  from_port   = 0
+  protocol    = "-1"
   cidr_blocks = ["0.0.0.0/0"]
 
   security_group_id = aws_security_group.workers.id

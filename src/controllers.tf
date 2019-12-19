@@ -127,7 +127,7 @@ resource "aws_instance" "controllers" {
   subnet_id     = element(var.controllers_subnets, count.index)
   instance_type = "t2.micro"
 
-  security_groups = [
+  vpc_security_group_ids = [
     "${aws_security_group.controllers.id}"
   ]
 

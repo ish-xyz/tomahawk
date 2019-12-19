@@ -11,3 +11,4 @@
 * Null resource "import boostrap files" add triggers for files [DONE]
 * Currently there's only one VPC both for controllers and workers (it needs more flexibility)
 * Security hardening
+* Workers fix security group
