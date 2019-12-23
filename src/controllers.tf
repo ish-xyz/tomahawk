@@ -275,7 +275,7 @@ resource "null_resource" "import_bootstrap_files" {
   }
 }
 
-resource "null_resource" "bootstrap-etcd" {
+resource "null_resource" "bootstrap-controllers" {
   count      = var.controllers_count
   depends_on = [null_resource.import_bootstrap_files]
 
@@ -298,5 +298,3 @@ resource "null_resource" "bootstrap-etcd" {
     ]
   }
 }
-
-

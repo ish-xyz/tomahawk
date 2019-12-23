@@ -1,4 +1,3 @@
-
 data "aws_subnet_ids" "workers" {
   vpc_id = var.vpc_id
 }
@@ -33,6 +32,18 @@ data "template_file" "workers_bootstrap" {
   }
 }
 
+
+data "template_cloudinit_config" "bootstrap" {
+  gzip           = true
+  base64_encode  = true
+
+  part {
+    filename     = "bootstrap.sh"
+    content_type = "text/x-shellscript"
+    content      = data.template_file.workers_bootstrap.rendered
+  }
+}
+
 resource "tls_private_key" "workers_ssh" {
   algorithm = "RSA"
 }
@@ -52,12 +63,12 @@ resource "aws_launch_configuration" "worker" {
 
   name_prefix = "kube-workers-"
 
-  image_id        = var.workers_ami
-  instance_type   = "t2.micro"
-  security_groups = ["${aws_security_group.workers.id}"]
-  key_name        = aws_key_pair.workers_ssh.key_name 
+  image_id         = var.workers_ami
+  instance_type    = "t2.micro"
+  security_groups  = ["${aws_security_group.workers.id}"]
+  key_name         = aws_key_pair.workers_ssh.key_name 
 
-  user_data_base64 = base64encode(data.template_file.workers_bootstrap.rendered)
+  user_data_base64 = data.template_cloudinit_config.bootstrap.rendered
 
   lifecycle {
     create_before_destroy = true

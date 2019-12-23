@@ -20,7 +20,7 @@ trap "rm -rf ${ETCD_URL##*/}  ./$(echo ${ETCD_URL##*/} | sed 's/\.tar\.gz//')" E
 log() {
     # Logging function
 
-    echo "$(date +"%m-%d-%Y::%H:%M:%S") ${1}"
+    echo "$(date +"%m-%d-%Y::%H:%M:%S") ${1}" | tee -a /boostrap.log
 }
 
 init_checks() {

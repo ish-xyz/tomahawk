@@ -24,7 +24,7 @@ REQUIRED_PACKAGES=("curl" "yum")
 log() {
     # Logging function
 
-    echo "$(date +"%m-%d-%Y::%H:%M:%S") ${1}"
+    echo "$(date +"%m-%d-%Y::%H:%M:%S") ${1}" | tee -a /boostrap.log
 }
 
 init_checks() {
@@ -185,6 +185,52 @@ reload_services() {
     systemctl enable kube-apiserver.service \
                      kube-controller-manager.service \
                      kube-scheduler.service
+}
+
+setup_rbac() {
+    # Configure RBAC for workers.
+
+    log "INFO: Configure RBAC for workers"
+    if [[ $(hostname) == "controller-0" ]]; then
+
+        cat <<EOF | kubectl apply --kubeconfig admin.kubeconfig -f -
+apiVersion: rbac.authorization.k8s.io/v1beta1
+kind: ClusterRole
+metadata:
+annotations:
+    rbac.authorization.kubernetes.io/autoupdate: "true"
+labels:
+    kubernetes.io/bootstrapping: rbac-defaults
+name: system:kube-apiserver-to-kubelet
+rules:
+- apiGroups:
+    - ""
+    resources:
+    - nodes/proxy
+    - nodes/stats
+    - nodes/log
+    - nodes/spec
+    - nodes/metrics
+    verbs:
+    - "*"
+EOF
+
+        cat <<EOF | kubectl apply --kubeconfig admin.kubeconfig -f -
+apiVersion: rbac.authorization.k8s.io/v1beta1
+kind: ClusterRoleBinding
+metadata:
+  name: system:kube-apiserver
+  namespace: ""
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: system:kube-apiserver-to-kubelet
+subjects:
+  - apiGroup: rbac.authorization.k8s.io
+    kind: User
+    name: kubernetes
+EOF
+    fi
 }
 
 boostrap() {
