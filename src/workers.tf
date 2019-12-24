@@ -105,8 +105,8 @@ resource "aws_autoscaling_group" "worker" {
   name = aws_launch_configuration.worker.name
 
   min_size             = var.workers_min
-  desired_capacity     = var.workers_max
-  max_size             = var.workers_count
+  desired_capacity     = var.workers_count
+  max_size             = var.workers_max
   health_check_type    = "EC2"
   launch_configuration = aws_launch_configuration.worker.name
   vpc_zone_identifier  = data.aws_subnet_ids.workers.ids
@@ -117,7 +117,7 @@ resource "aws_autoscaling_group" "worker" {
   }
 
   dynamic "tag" {
-    for_each = var.worker_tags
+    for_each = var.workers_tags
     iterator = asg_tag
     content {
       key                 = asg_tag.key

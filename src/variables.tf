@@ -76,7 +76,6 @@ variable "workers_min" {
   default = 2
 }
 
-
 variable "workers_max" {
   type    = number
   default = 6
@@ -93,7 +92,7 @@ variable "workers_ami" {
   default = "ami-0334a7a72f69e4d0f"
 }
 
-variable "worker_tags" {
+variable "workers_tags" {
   type = map
   default = {
     Name        = "kube-worker-asg"
