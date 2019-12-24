@@ -4,17 +4,18 @@ variable "project_name" {
   default = "kubernetes-on-aws"
 }
 
-variable "vpc_id" {
-  type    = string
-  default = "vpc-f670c791"
-}
-
 variable "environment" {
   type    = string
   default = "development"
 }
 
 ## Controllers instances
+
+variable "controllers_vpc_id" {
+  type    = string
+  default = "vpc-f670c791"
+}
+
 variable "controllers_count" {
   type    = number
   default = 3
@@ -65,9 +66,26 @@ variable "nlb_name" {
 
 ## Workers
 
-variable "workers_count" {
+variable "workers_vpc_id" {
+  type    = string
+  default = "vpc-f670c791"
+}
+
+variable "workers_min" {
+  type    = number
+  default = 2
+}
+
+
+variable "workers_max" {
   type    = number
   default = 6
+}
+
+
+variable "workers_count" {
+  type    = number
+  default = 4
 }
 
 variable "workers_ami" {

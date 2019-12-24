@@ -1,5 +1,5 @@
 data "aws_subnet_ids" "workers" {
-  vpc_id = var.vpc_id
+  vpc_id = var.workers_vpc_id
 }
 
 data "template_file" "kube-proxy" {
@@ -77,7 +77,7 @@ resource "aws_launch_configuration" "worker" {
 
 resource "aws_security_group" "workers" {
   name   = "kube-workers"
-  vpc_id = var.vpc_id
+  vpc_id = var.workers_vpc_id
 }
 
 resource "aws_security_group_rule" "workers_allow_ingress_all" {
@@ -104,9 +104,9 @@ resource "aws_autoscaling_group" "worker" {
 
   name = aws_launch_configuration.worker.name
 
-  min_size             = 4
-  desired_capacity     = 4
-  max_size             = 4
+  min_size             = var.workers_min
+  desired_capacity     = var.workers_max
+  max_size             = var.workers_count
   health_check_type    = "EC2"
   launch_configuration = aws_launch_configuration.worker.name
   vpc_zone_identifier  = data.aws_subnet_ids.workers.ids

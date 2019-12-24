@@ -22,7 +22,7 @@ resource "aws_lb_target_group" "controllers" {
   name     = "kube-controllers-tg"
   port     = 6443
   protocol = "TCP"
-  vpc_id   = var.vpc_id
+  vpc_id   = var.controllers_vpc_id
 }
 
 

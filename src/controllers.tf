@@ -1,5 +1,5 @@
 data "aws_vpc" "controllers" {
-  id = var.vpc_id
+  id = var.controllers_vpc_id
 }
 
 data "template_file" "kube-encryption" {
@@ -62,7 +62,7 @@ resource "aws_key_pair" "controllers_ssh" {
 
 resource "aws_security_group" "controllers" {
   name   = "kube-controllers"
-  vpc_id = var.vpc_id
+  vpc_id = var.controllers_vpc_id
 }
 
 resource "aws_security_group_rule" "allow_egress_all" {
