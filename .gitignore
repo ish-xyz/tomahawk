@@ -3,6 +3,7 @@ src/installer/.bootstrap.pem
 src/installer/.workers.pem
 src/.terraform
 src/terraform.tfstate*
+src/.terraform.tfstate.lock.info
 .local/*
 .local
 tmp/terraform.tfstate*

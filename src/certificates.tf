@@ -66,7 +66,7 @@ module "kube-scheduler" {
 module "service-account" {
   source          = "ish-xyz/certificates-generator/tls"
   version         = "0.1.0"
-  cn              = "service-account"
+  cn              = "service-accounts"
   org             = "Kubernetes"
   ou              = "kubernetes-on-aws"
   ca_cert         = module.init-ca.ca_cert

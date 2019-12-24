@@ -23,12 +23,12 @@ data "template_file" "workers_bootstrap" {
     COUNTRY           = "UK"
     LOCATION          = "London"
     STATE             = "United Kingdom"
-    ORG               = var.project_name
-    OU                = "system:nodes"
-    CN                = "system:nodes:worker"
+    ORG               = "system:nodes"
+    OU                = var.project_name
+    CN                = "system:node"
     PROJECT_NAME      = var.project_name
     KUBECONFIG_PROXY  = data.template_file.kube-proxy.rendered
-    KUBE_ADDRESS      = "https://google.com:6443"
+    KUBE_ADDRESS      = "https://${aws_lb.controllers.dns_name}:6443"
   }
 }
 

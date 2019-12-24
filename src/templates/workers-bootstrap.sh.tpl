@@ -33,7 +33,7 @@ kubelet_config="$${kubelet_confdir}/kubeconfig"
 kubelet_config_ext="$${kubelet_confdir}/kubelet-config.yaml"
 
 #Instance Metadata
-lock_sb=0
+lock_sb=1
 metadata="http://169.254.169.254/latest/meta-data"
 instance_mac=$(curl -s $${metadata}/network/interfaces/macs/ | head -n1 | tr -d '/')
 pod_cidr=$(curl -s $${metadata}/network/interfaces/macs/$${instance_mac}/vpc-ipv4-cidr-block/)
@@ -127,7 +127,7 @@ configure_cni() {
             "ipam": {
                 "type": "host-local",
                 "ranges": [
-                [{"subnet": "$${pod_cidr}"}]
+                    [{"subnet": "$${pod_cidr}"}]
                 ],
                 "routes": [{"dst": "0.0.0.0/0"}]
             }
@@ -151,12 +151,12 @@ configure_containerd() {
     log "INFO: Configure contained"
     cat << EOF | sed 's/        //' | tee $${containerd_confdir}/config.toml
         [plugins]
-        [plugins.cri.containerd]
+          [plugins.cri.containerd]
             snapshotter = "overlayfs"
             [plugins.cri.containerd.default_runtime]
-            runtime_type = "io.containerd.runtime.v1.linux"
-            runtime_engine = "$${execdir}/runc"
-            runtime_root = ""
+              runtime_type = "io.containerd.runtime.v1.linux"
+              runtime_engine = "$${execdir}/runc"
+              runtime_root = ""
 EOF
 
     log "INFO: Create containerd systemd service"
@@ -208,7 +208,7 @@ EOF
     log "INFO: Create and sign certificate"
     openssl genrsa -out $${worker_key} 2048
     openssl req -new -key $${worker_key} -out worker.csr \
-        -subj "/C=${COUNTRY}/ST=${STATE}/L=${LOCATION}/O=${ORG}/OU=${OU}/CN=${CN}"
+        -subj "/C=${COUNTRY}/ST=${STATE}/L=${LOCATION}/O=${ORG}/OU=${OU}/CN=${CN}:$(hostname -f)"
 
     cat <<EOF | sed 's/    //' | tee worker.ext
     authorityKeyIdentifier=keyid,issuer
@@ -261,17 +261,17 @@ EOF
         kind: KubeletConfiguration
         apiVersion: kubelet.config.k8s.io/v1beta1
         authentication:
-        anonymous:
+          anonymous:
             enabled: false
-        webhook:
+          webhook:
             enabled: true
-        x509:
+          x509:
             clientCAFile: "$${ca_cert_filename}"
         authorization:
-        mode: Webhook
+          mode: Webhook
         clusterDomain: "cluster.local"
         clusterDNS:
-        - "10.32.0.10"
+          - "10.32.0.10"
         podCIDR: "$${pod_cidr}"
         resolvConf: "/run/systemd/resolve/resolv.conf"
         runtimeRequestTimeout: "15m"
@@ -289,14 +289,14 @@ EOF
 
         [Service]
         ExecStart=$${execdir}/kubelet \\
-        --config=$${kubelet_config_ext} \\
-        --container-runtime=remote \\
-        --container-runtime-endpoint=unix:///var/run/containerd/containerd.sock \\
-        --image-pull-progress-deadline=2m \\
-        --kubeconfig=$${kubelet_config} \\
-        --network-plugin=cni \\
-        --register-node=true \\
-        --v=2
+            --config=$${kubelet_config_ext} \\
+            --container-runtime=remote \\
+            --container-runtime-endpoint=unix:///var/run/containerd/containerd.sock \\
+            --image-pull-progress-deadline=2m \\
+            --kubeconfig=$${kubelet_config} \\
+            --network-plugin=cni \\
+            --register-node=true \\
+            --v=2
         Restart=on-failure
         RestartSec=5
 
@@ -313,24 +313,24 @@ configure_kubeproxy() {
 ${KUBECONFIG_PROXY}
 EOF
 
-    cat <<EOF | sed 's/    //' | tee $${kubeproxy_config_ext}
+    cat <<EOF | sed 's/        //' | tee $${kubeproxy_config_ext}
         kind: KubeProxyConfiguration
         apiVersion: kubeproxy.config.k8s.io/v1alpha1
         clientConnection:
-        kubeconfig: "$${kubeproxy_config}"
+          kubeconfig: "$${kubeproxy_config}"
         mode: "iptables"
-        clusterCIDR: "10.200.0.0/16"
+        clusterCIDR: $${pod_cidr}
 EOF
 
     log "INFO: Create Kube Proxy systemd service"
-    cat <<EOF | sed 's/    //' | tee /etc/systemd/system/kube-proxy.service
+    cat <<EOF | sed 's/        //' | tee /etc/systemd/system/kube-proxy.service
         [Unit]
         Description=Kubernetes Kube Proxy
         Documentation=https://github.com/kubernetes/kubernetes
 
         [Service]
         ExecStart=$${execdir}/kube-proxy \\
-        --config=$${kubeproxy_config_ext}
+            --config=$${kubeproxy_config_ext}
         Restart=on-failure
         RestartSec=5
 
@@ -342,6 +342,7 @@ EOF
 reload_services() {
     # Enable & Reload Services
 
+    log "INFO: Enable & Reload Services"
     systemctl daemon-reload
     systemctl enable containerd kubelet kube-proxy
 }
@@ -357,6 +358,16 @@ bootstrap() {
     configure_kubelet
     configure_kubeproxy
     reload_services
+
+    log "INFO: starting containerd..."
+    systemctl start containerd
+
+    log "INFO: starting Kubelet..."
+    systemctl start kubelet
+
+    log "INFO: starting Kube Proxy..."
+    systemctl start kube-proxy
+
     #create_autodrain_service
 }
 
