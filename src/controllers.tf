@@ -133,8 +133,9 @@ resource "aws_instance" "controllers" {
 
   tags = {
     Name        = "kube-controller-${count.index}"
-    role        = "master"
-    environment = var.environment
+    Role        = "controllers"
+    Environment = var.environment
+    Cluster     = var.cluster_name
   }
 
   connection {

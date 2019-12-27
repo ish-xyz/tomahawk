@@ -265,6 +265,9 @@ boostrap() {
 
     log "INFO: starting kube-scheduler..."
     systemctl start kube-scheduler.service
+
+    log "INFO: setting up RBAC for worker nodes..."
+    setup_rbac
 }
 
 boostrap

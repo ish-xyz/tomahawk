@@ -4,7 +4,7 @@ module "init-ca" {
   version         = "0.1.0"
   cn              = "CA"
   org             = "kubernetes-on-aws-init-CA"
-  ou              = var.project_name
+  ou              = var.cluster_name
   country         = "United Kindgom"
   location        = "London"
   validity_period = 8760
@@ -16,7 +16,7 @@ module "admin" {
   version         = "0.1.0"
   cn              = "admin"
   org             = "system:masters"
-  ou              = var.project_name
+  ou              = var.cluster_name
   ca_cert         = module.init-ca.ca_cert
   ca_key          = module.init-ca.ca_key
   country         = "United Kindgom"
@@ -29,7 +29,7 @@ module "kube-controller-manager" {
   version         = "0.1.0"
   cn              = "system:kube-controller-manager"
   org             = "system:kube-controller-manager"
-  ou              = var.project_name
+  ou              = var.cluster_name
   ca_cert         = module.init-ca.ca_cert
   ca_key          = module.init-ca.ca_key
   country         = "United Kindgom"
@@ -42,7 +42,7 @@ module "kube-proxy" {
   version         = "0.1.0"
   cn              = "system:kube-proxy"
   org             = "system:kube-proxy"
-  ou              = var.project_name
+  ou              = var.cluster_name
   ca_cert         = module.init-ca.ca_cert
   ca_key          = module.init-ca.ca_key
   country         = "United Kindgom"
@@ -55,7 +55,7 @@ module "kube-scheduler" {
   version         = "0.1.0"
   cn              = "system:kube-scheduler"
   org             = "system:kube-scheduler"
-  ou              = var.project_name
+  ou              = var.cluster_name
   ca_cert         = module.init-ca.ca_cert
   ca_key          = module.init-ca.ca_key
   country         = "United Kindgom"
@@ -68,7 +68,7 @@ module "service-account" {
   version         = "0.1.0"
   cn              = "service-accounts"
   org             = "Kubernetes"
-  ou              = var.project_name
+  ou              = var.cluster_name
   ca_cert         = module.init-ca.ca_cert
   ca_key          = module.init-ca.ca_key
   country         = "United Kindgom"
@@ -81,7 +81,7 @@ module "kubernetes" {
   version         = "0.1.0"
   cn              = "Kubernetes"
   org             = "Kubernetes"
-  ou              = var.project_name
+  ou              = var.cluster_name
   ca_cert         = module.init-ca.ca_cert
   ca_key          = module.init-ca.ca_key
   country         = "United Kindgom"

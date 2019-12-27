@@ -1,5 +1,5 @@
 ## Global
-variable "project_name" {
+variable "cluster_name" {
   type    = string
   default = "kubernetes-on-aws"
 }
@@ -81,7 +81,6 @@ variable "workers_max" {
   default = 6
 }
 
-
 variable "workers_count" {
   type    = number
   default = 4
@@ -95,7 +94,7 @@ variable "workers_ami" {
 variable "workers_tags" {
   type = map
   default = {
-    Name        = "kube-worker-asg"
+    Name        = "kube-workers-asg"
     Environment = "development"
   }
 }

@@ -15,6 +15,7 @@ resource "aws_lb" "controllers" {
   tags = {
     Environment = var.environment
     Name        = var.nlb_name
+    Cluster     = var.cluster_name
   }
 }
 
