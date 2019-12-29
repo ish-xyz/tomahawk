@@ -193,26 +193,26 @@ setup_rbac() {
     log "INFO: Configure RBAC for workers"
     if [[ $(hostname) == "controller-0" ]]; then
 
-        cat <<EOF | kubectl apply --kubeconfig admin.kubeconfig -f -
+    cat <<EOF | kubectl apply --kubeconfig admin.kubeconfig -f -
 apiVersion: rbac.authorization.k8s.io/v1beta1
 kind: ClusterRole
 metadata:
-annotations:
+  annotations:
     rbac.authorization.kubernetes.io/autoupdate: "true"
-labels:
+  labels:
     kubernetes.io/bootstrapping: rbac-defaults
-name: system:kube-apiserver-to-kubelet
+  name: system:kube-apiserver-to-kubelet
 rules:
-- apiGroups:
-    - ""
+  - apiGroups:
+      - ""
     resources:
-    - nodes/proxy
-    - nodes/stats
-    - nodes/log
-    - nodes/spec
-    - nodes/metrics
+      - nodes/proxy
+      - nodes/stats
+      - nodes/log
+      - nodes/spec
+      - nodes/metrics
     verbs:
-    - "*"
+      - "*"
 EOF
 
         cat <<EOF | kubectl apply --kubeconfig admin.kubeconfig -f -

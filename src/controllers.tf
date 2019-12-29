@@ -2,6 +2,15 @@ data "aws_vpc" "controllers" {
   id = var.controllers_vpc_id
 }
 
+data "aws_subnet_ids" "controllers" {
+  vpc_id = var.controllers_vpc_id
+}
+
+data "aws_subnet" "controllers" {
+  count = length(data.aws_subnet_ids.controllers.ids)
+  id    = element(tolist(data.aws_subnet_ids.controllers.ids), count.index)
+}
+
 data "template_file" "kube-encryption" {
   template = file("${path.module}/templates/kube-encryption.yml.tpl")
   vars = {
@@ -12,7 +21,7 @@ data "template_file" "kube-encryption" {
 data "template_file" "kube-controller-manager" {
   template = file("${path.module}/templates/kubeconfig.yml.tpl")
   vars = {
-    project_name = var.project_name
+    project_name = var.cluster_name
     client_cert  = base64encode(module.kube-controller-manager.cert)
     client_key   = base64encode(module.kube-controller-manager.key)
     ca_cert      = base64encode(module.init-ca.ca_cert)
@@ -24,7 +33,7 @@ data "template_file" "kube-controller-manager" {
 data "template_file" "kube-scheduler" {
   template = file("${path.module}/templates/kubeconfig.yml.tpl")
   vars = {
-    project_name = var.project_name
+    project_name = var.cluster_name
     client_cert  = base64encode(module.kube-scheduler.cert)
     client_key   = base64encode(module.kube-scheduler.key)
     ca_cert      = base64encode(module.init-ca.ca_cert)
@@ -36,7 +45,7 @@ data "template_file" "kube-scheduler" {
 data "template_file" "admin" {
   template = file("${path.module}/templates/kubeconfig.yml.tpl")
   vars = {
-    project_name = var.project_name
+    project_name = var.cluster_name
     client_cert  = base64encode(module.admin.cert)
     client_key   = base64encode(module.admin.key)
     ca_cert      = base64encode(module.init-ca.ca_cert)
@@ -75,22 +84,12 @@ resource "aws_security_group_rule" "allow_egress_all" {
   security_group_id = aws_security_group.controllers.id
 }
 
-resource "aws_security_group_rule" "allow_etcd_ext" {
-  type        = "ingress"
-  from_port   = 2380
-  to_port     = 2380
-  protocol    = "tcp"
-  cidr_blocks = ["0.0.0.0/0"]
-
-  security_group_id = aws_security_group.controllers.id
-}
-
-resource "aws_security_group_rule" "allow_etcd_kapi" {
+resource "aws_security_group_rule" "allow_etcd" {
   type        = "ingress"
   from_port   = 2379
-  to_port     = 2379
+  to_port     = 2380
   protocol    = "tcp"
-  cidr_blocks = ["0.0.0.0/0"]
+  cidr_blocks = data.aws_subnet.controllers.*.cidr_block
 
   security_group_id = aws_security_group.controllers.id
 }
@@ -100,7 +99,7 @@ resource "aws_security_group_rule" "allow_kube_api_ext" {
   from_port   = 6443
   to_port     = 6443
   protocol    = "tcp"
-  cidr_blocks = ["0.0.0.0/0"]
+  cidr_blocks = ["0.0.0.0/0", "::/0"]
 
   security_group_id = aws_security_group.controllers.id
 }

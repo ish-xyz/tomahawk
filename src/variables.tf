@@ -66,6 +66,7 @@ variable "nlb_name" {
 
 ## Workers
 
+#*
 variable "workers_vpc_id" {
   type    = string
   default = "vpc-f670c791"

@@ -5,7 +5,7 @@ data "aws_subnet_ids" "workers" {
 data "template_file" "kube-proxy" {
   template = file("${path.module}/templates/kubeconfig.yml.tpl")
   vars = {
-    project_name = var.project_name
+    project_name = var.cluster_name
     client_cert  = base64encode(module.kube-proxy.cert)
     client_key   = base64encode(module.kube-proxy.key)
     ca_cert      = base64encode(module.init-ca.ca_cert)
@@ -24,9 +24,9 @@ data "template_file" "workers_bootstrap" {
     LOCATION          = "London"
     STATE             = "United Kingdom"
     ORG               = "system:nodes"
-    OU                = var.project_name
+    OU                = var.cluster_name
     CN                = "system:node"
-    PROJECT_NAME      = var.project_name
+    PROJECT_NAME      = var.cluster_name
     KUBECONFIG_PROXY  = data.template_file.kube-proxy.rendered
     KUBE_ADDRESS      = "https://${aws_lb.controllers.dns_name}:6443"
   }
