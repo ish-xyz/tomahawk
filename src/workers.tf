@@ -48,12 +48,6 @@ resource "tls_private_key" "workers_ssh" {
   algorithm = "RSA"
 }
 
-resource "local_file" "workers_ssh" {
-  content         = tls_private_key.workers_ssh.private_key_pem
-  filename        = "${path.module}/installer/.workers.pem"
-  file_permission = "0600"
-}
-
 resource "aws_key_pair" "workers_ssh" {
   key_name   = "kube-workers"
   public_key = tls_private_key.workers_ssh.public_key_openssh
