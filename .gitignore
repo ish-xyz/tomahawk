@@ -2,9 +2,9 @@ src/.terraform/*
 src/installer/.bootstrap.pem
 src/installer/.workers.pem
 src/.terraform
+src/.local
+src/.local/*
 src/terraform.tfstate*
 src/.terraform.tfstate.lock.info
-.local/*
-.local
 tmp/terraform.tfstate*
 tmp/.terraform
