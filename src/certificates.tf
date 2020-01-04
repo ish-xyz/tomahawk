@@ -2,9 +2,9 @@
 module "init-ca" {
   source          = "ish-xyz/certificates-generator/tls"
   version         = "0.1.0"
-  cn              = "CA"
-  org             = "kubernetes-on-aws-init-CA"
-  ou              = var.cluster_name
+  cn              = "Kubernetes"
+  org             = "Kubernetes"
+  ou              = "CA"
   country         = "United Kindgom"
   location        = "London"
   validity_period = 8760
@@ -41,7 +41,7 @@ module "kube-proxy" {
   source          = "ish-xyz/certificates-generator/tls"
   version         = "0.1.0"
   cn              = "system:kube-proxy"
-  org             = "system:kube-proxy"
+  org             = "system:node-proxier"
   ou              = var.cluster_name
   ca_cert         = module.init-ca.ca_cert
   ca_key          = module.init-ca.ca_key
@@ -79,7 +79,7 @@ module "service-account" {
 module "kubernetes" {
   source          = "ish-xyz/certificates-generator/tls"
   version         = "0.1.0"
-  cn              = "Kubernetes"
+  cn              = "kubernetes"
   org             = "Kubernetes"
   ou              = var.cluster_name
   ca_cert         = module.init-ca.ca_cert

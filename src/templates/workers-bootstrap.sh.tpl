@@ -273,7 +273,7 @@ EOF
         clusterDNS:
           - "10.32.0.10"
         podCIDR: "$${pod_cidr}"
-        resolvConf: "/run/systemd/resolve/resolv.conf"
+        resolvConf: "/run/NetworkManager/resolv.conf"
         runtimeRequestTimeout: "15m"
         tlsCertFile: "$${worker_cert}"
         tlsPrivateKeyFile: "$${worker_key}"
