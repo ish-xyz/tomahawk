@@ -151,6 +151,9 @@ configure_containerd() {
     log "INFO: Configure contained"
     cat << EOF | sed 's/        //' | tee $${containerd_confdir}/config.toml
         [plugins]
+          [plugins.cri.registry.mirrors]
+            [plugins.cri.registry.mirrors."docker.io"]
+              endpoint = ["https://registry-1.docker.io"]
           [plugins.cri.containerd]
             snapshotter = "overlayfs"
             [plugins.cri.containerd.default_runtime]
@@ -339,6 +342,18 @@ EOF
 EOF
 }
 
+configure_resolv_conf() {
+
+    log "INFO: Configure /etc/resolv.conf with Google Nameservers"
+    cat <<EOF | sed 's/        //' | tee /etc/resolv.conf
+        nameserver 8.8.8.8
+	nameserver 8.8.4.4
+	nameserver $(cat /etc/resolv.conf | grep nameserver | awk {'print $2'} | tail -n1)
+EOF
+
+}
+
+
 reload_services() {
     # Enable & Reload Services
 
@@ -351,6 +366,7 @@ bootstrap() {
 
     init_checks
     prepare
+    configure_resolv_conf
     lock_simultaneus_boostrap
     generate_certificates
     configure_cni
