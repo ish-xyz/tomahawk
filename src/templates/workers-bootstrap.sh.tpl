@@ -21,8 +21,8 @@ containerd_confdir="/etc/containerd/"
 cni_execdir="/opt/cni/bin"
 
 #Config files
-cni_bridge_file="$${cni_confdir}/10-bridge.conf"
-cni_loopback_file="$${cni_confdir}/99-loopback.conf"
+flannel_cniconf="$${cni_confdir}/cni-conf.json"
+flannel_netconf="$${cni_confdir}/net-conf.json"
 ca_cert_filename="$${kube_confdir}/ca.pem"
 ca_key_filename="ca-key.pem"
 worker_cert="$${kubelet_confdir}/worker.pem"
@@ -40,6 +40,7 @@ instance_mac=$(curl -s $${metadata}/network/interfaces/macs/ | head -n1 | tr -d 
 #Packages to verify, download and/or install
 required_cmds=("yum" "tar")
 install_packages=("curl" "socat" "conntrack" "ipset")
+
 kube_packages=(
     ["https://github.com/kubernetes-sigs/cri-tools/releases/download/v1.15.0/crictl-v1.15.0-linux-amd64.tar.gz"]="$${execdir}/" \
     ["https://github.com/containernetworking/plugins/releases/download/v0.8.2/cni-plugins-linux-amd64-v0.8.2.tgz"]="$${cni_execdir}" \
@@ -108,6 +109,44 @@ prepare() {
         mv $${pkg##*/} $${kube_packages[$${pkg}]} 
     done
     cd $${bootstrap_dir}
+}
+
+configure_cni() {
+    # Configure CNI
+
+    log "INFO: Configure Flannel CNI"
+    cat <<EOF | sed 's/        //' | tee $${flannel_cniconf}
+        {
+            "name": "cbr0",
+            "cniVersion": "0.3.1",
+            "plugins": [
+                {
+                    "type": "flannel",
+                    "delegate": {
+                        "hairpinMode": true,
+                        "isDefaultGateway": true
+                    }
+                },
+                {
+                    "type": "portmap",
+                    "capabilities": {
+                        "portMappings": true
+                    }
+                }
+            ]
+        }
+EOF
+
+    log "INFO: Flannel -> configure network"
+    cat <<EOF | sed 's/        //' | tee $${flannel_netconf}
+        {
+            "Network": "${POD_CIDR}",
+            "Backend": {
+                "Type": "vxlan"
+            }
+        }
+EOF
+
 }
 
 configure_containerd() {
@@ -338,6 +377,7 @@ bootstrap() {
     configure_containerd
     configure_kubelet
     configure_kubeproxy
+    configure_cni
     #configure_graceful_shutdown
     reload_services
 
