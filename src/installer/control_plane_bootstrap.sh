@@ -130,6 +130,7 @@ create_controller_manager() {
     ExecStart=/usr/bin/kube-controller-manager \\
         --address=0.0.0.0 \\
         --cluster-cidr=${CLUSTER_CIDR} \\
+        --allocate-node-cidrs=true \\
         --cluster-name=kubernetes \\
         --cluster-signing-cert-file=${KUBE_DATADIR}/ca.pem \\
         --cluster-signing-key-file=${KUBE_DATADIR}/ca-key.pem \\

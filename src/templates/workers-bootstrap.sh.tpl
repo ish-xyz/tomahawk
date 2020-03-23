@@ -13,16 +13,12 @@ declare -A kube_packages
 #Config directories
 execdir="/usr/bin"
 bootstrap_dir="/bootstrap"
-cni_confdir="/etc/cni/net.d"
 kubelet_confdir="/var/lib/kubelet"
 kubeproxy_confdir="/var/lib/kube-proxy"
 kube_confdir="/var/lib/kubernetes"
 containerd_confdir="/etc/containerd/"
-cni_execdir="/opt/cni/bin"
 
 #Config files
-flannel_cniconf="$${cni_confdir}/cni-conf.json"
-flannel_netconf="$${cni_confdir}/net-conf.json"
 ca_cert_filename="$${kube_confdir}/ca.pem"
 ca_key_filename="ca-key.pem"
 worker_cert="$${kubelet_confdir}/worker.pem"
@@ -43,7 +39,6 @@ install_packages=("curl" "socat" "conntrack" "ipset")
 
 kube_packages=(
     ["https://github.com/kubernetes-sigs/cri-tools/releases/download/v1.15.0/crictl-v1.15.0-linux-amd64.tar.gz"]="$${execdir}/" \
-    ["https://github.com/containernetworking/plugins/releases/download/v0.8.2/cni-plugins-linux-amd64-v0.8.2.tgz"]="$${cni_execdir}" \
     ["https://github.com/containerd/containerd/releases/download/v1.2.9/containerd-1.2.9.linux-amd64.tar.gz"]="/bin/" \
     ["https://storage.googleapis.com/kubernetes-release/release/v1.15.3/bin/linux/amd64/kubectl"]="$${execdir}/kubectl" \
     ["https://storage.googleapis.com/kubernetes-release/release/v1.15.3/bin/linux/amd64/kube-proxy"]="$${execdir}/kube-proxy" \
@@ -77,8 +72,6 @@ prepare() {
 
     log "INFO: Create required directories"
     mkdir -p $${bootstrap_dir}/cmd \
-        $${cni_confdir} \
-        $${cni_execdir}  \
         $${kubeproxy_confdir} \
         $${kube_confdir} \
         $${kubelet_confdir} \
@@ -109,44 +102,6 @@ prepare() {
         mv $${pkg##*/} $${kube_packages[$${pkg}]} 
     done
     cd $${bootstrap_dir}
-}
-
-configure_cni() {
-    # Configure CNI
-
-    log "INFO: Configure Flannel CNI"
-    cat <<EOF | sed 's/        //' | tee $${flannel_cniconf}
-        {
-            "name": "cbr0",
-            "cniVersion": "0.3.1",
-            "plugins": [
-                {
-                    "type": "flannel",
-                    "delegate": {
-                        "hairpinMode": true,
-                        "isDefaultGateway": true
-                    }
-                },
-                {
-                    "type": "portmap",
-                    "capabilities": {
-                        "portMappings": true
-                    }
-                }
-            ]
-        }
-EOF
-
-    log "INFO: Flannel -> configure network"
-    cat <<EOF | sed 's/        //' | tee $${flannel_netconf}
-        {
-            "Network": "${POD_CIDR}",
-            "Backend": {
-                "Type": "vxlan"
-            }
-        }
-EOF
-
 }
 
 configure_containerd() {
@@ -377,7 +332,7 @@ bootstrap() {
     configure_containerd
     configure_kubelet
     configure_kubeproxy
-    configure_cni
+
     #configure_graceful_shutdown
     reload_services
 
