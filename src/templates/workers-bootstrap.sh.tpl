@@ -36,7 +36,6 @@ kubelet_config_ext="$${kubelet_confdir}/kubelet-config.yaml"
 lock_sb=1
 metadata="http://169.254.169.254/latest/meta-data"
 instance_mac=$(curl -s $${metadata}/network/interfaces/macs/ | head -n1 | tr -d '/')
-pod_cidr=$(curl -s $${metadata}/network/interfaces/macs/$${instance_mac}/vpc-ipv4-cidr-block/)
 
 #Packages to verify, download and/or install
 required_cmds=("yum" "tar")
@@ -109,40 +108,6 @@ prepare() {
         mv $${pkg##*/} $${kube_packages[$${pkg}]} 
     done
     cd $${bootstrap_dir}
-}
-
-
-configure_cni() {
-    # Configure CNI
-
-    log "INFO: Configure CNI Brigde network."
-    cat <<EOF | sed 's/        //' | tee $${cni_bridge_file}
-        {
-            "cniVersion": "0.3.1",
-            "name": "bridge",
-            "type": "bridge",
-            "bridge": "cnio0",
-            "isGateway": true,
-            "ipMasq": true,
-            "ipam": {
-                "type": "host-local",
-                "ranges": [
-                    [{"subnet": "$${pod_cidr}"}]
-                ],
-                "routes": [{"dst": "0.0.0.0/0"}]
-            }
-        }
-EOF
-
-    log "INFO: Configure CNI loopback."
-    cat <<EOF | sed 's/        //' | tee $${cni_loopback_file}
-        {
-            "cniVersion": "0.3.1",
-            "name": "lo",
-            "type": "loopback"
-        }
-EOF
-
 }
 
 configure_containerd() {
@@ -275,7 +240,7 @@ EOF
         clusterDomain: "cluster.local"
         clusterDNS:
           - "10.32.0.10"
-        podCIDR: "$${pod_cidr}"
+        podCIDR: "${POD_CIDR}"
         resolvConf: "/run/NetworkManager/resolv.conf"
         runtimeRequestTimeout: "15m"
         tlsCertFile: "$${worker_cert}"
@@ -322,7 +287,7 @@ EOF
         clientConnection:
           kubeconfig: "$${kubeproxy_config}"
         mode: "iptables"
-        clusterCIDR: $${pod_cidr}
+        clusterCIDR: ${POD_CIDR}
 EOF
 
     log "INFO: Create Kube Proxy systemd service"
@@ -369,10 +334,11 @@ bootstrap() {
     configure_resolv_conf
     lock_simultaneus_boostrap
     generate_certificates
-    configure_cni
+
     configure_containerd
     configure_kubelet
     configure_kubeproxy
+    #configure_graceful_shutdown
     reload_services
 
     log "INFO: starting containerd..."
@@ -384,7 +350,7 @@ bootstrap() {
     log "INFO: starting Kube Proxy..."
     systemctl start kube-proxy
 
-    #create_autodrain_service
+    
 }
 
 bootstrap

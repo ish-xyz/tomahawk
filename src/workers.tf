@@ -17,6 +17,7 @@ data "template_file" "kube-proxy" {
 data "template_file" "workers_bootstrap" {
   template = file("${path.module}/templates/workers-bootstrap.sh.tpl")
   vars = {
+    POD_CIDR          = var.cluster_cidr
     CA_CERT           = module.init-ca.ca_cert
     CA_KEY            = module.init-ca.ca_key
     CERT_VALIDITY     = 8760

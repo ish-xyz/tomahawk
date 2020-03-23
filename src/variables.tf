@@ -9,6 +9,11 @@ variable "environment" {
   default = "development"
 }
 
+variable "cluster_cidr" {
+  type    = string
+  default = "10.200.0.0/16"
+}
+
 ## Controllers instances
 
 variable "controllers_vpc_id" {

@@ -290,7 +290,7 @@ resource "null_resource" "bootstrap-controllers" {
     inline = [
       "chmod +x ~/bootstrap/*.sh",
       "cd ~/bootstrap && sudo ./etcd_bootstrap.sh \"${join(" ", aws_instance.controllers.*.private_ip)}\"",
-      "cd ~/bootstrap && sudo ./control_plane_bootstrap.sh \"${join(" ", aws_instance.controllers.*.private_ip)}\" ${data.aws_vpc.controllers.cidr_block}",
+      "cd ~/bootstrap && sudo ./control_plane_bootstrap.sh \"${join(" ", aws_instance.controllers.*.private_ip)}\" ${var.cluster_cidr}",
       "rm -rf ~/bootstrap"
     ]
   }

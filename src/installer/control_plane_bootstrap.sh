@@ -6,7 +6,7 @@ set -e
 
 LOCK_SB=1
 CONTROLLERS=${1}
-VPC_CIDR=${2}
+CLUSTER_CIDR=${2}
 KUBE_PACKAGES=("https://storage.googleapis.com/kubernetes-release/release/v1.15.3/bin/linux/amd64/kube-apiserver" \
                "https://storage.googleapis.com/kubernetes-release/release/v1.15.3/bin/linux/amd64/kube-controller-manager" \
                "https://storage.googleapis.com/kubernetes-release/release/v1.15.3/bin/linux/amd64/kube-scheduler" \
@@ -129,7 +129,7 @@ create_controller_manager() {
     [Service]
     ExecStart=/usr/bin/kube-controller-manager \\
         --address=0.0.0.0 \\
-        --cluster-cidr=${VPC_CIDR} \\
+        --cluster-cidr=${CLUSTER_CIDR} \\
         --cluster-name=kubernetes \\
         --cluster-signing-cert-file=${KUBE_DATADIR}/ca.pem \\
         --cluster-signing-key-file=${KUBE_DATADIR}/ca-key.pem \\
