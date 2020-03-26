@@ -104,3 +104,8 @@ variable "workers_tags" {
     Environment = "development"
   }
 }
+
+variable "workers_type" {
+  type = string
+  default = "t2.large"
+}

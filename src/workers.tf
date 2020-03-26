@@ -59,7 +59,7 @@ resource "aws_launch_configuration" "worker" {
   name_prefix = "kube-workers-"
 
   image_id         = var.workers_ami
-  instance_type    = "t2.large"
+  instance_type    = var.workers_type
   security_groups  = ["${aws_security_group.workers.id}"]
   key_name         = aws_key_pair.workers_ssh.key_name 
 

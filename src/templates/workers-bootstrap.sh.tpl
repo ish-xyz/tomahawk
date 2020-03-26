@@ -305,13 +305,12 @@ configure_resolv_conf() {
 
     log "INFO: Configure /etc/resolv.conf with Google Nameservers"
     cat <<EOF | sed 's/        //' | tee /etc/resolv.conf
-        nameserver 8.8.8.8
+    nameserver 8.8.8.8
 	nameserver 8.8.4.4
 	nameserver $(cat /etc/resolv.conf | grep nameserver | awk {'print $2'} | tail -n1)
 EOF
 
 }
-
 
 reload_services() {
     # Enable & Reload Services
@@ -332,16 +331,14 @@ bootstrap() {
     configure_containerd
     configure_kubelet
     configure_kubeproxy
-
     #configure_graceful_shutdown
+    #configure_hostname
     reload_services
 
     log "INFO: starting containerd..."
     systemctl start containerd
-
     log "INFO: starting Kubelet..."
     systemctl start kubelet
-
     log "INFO: starting Kube Proxy..."
     systemctl start kube-proxy
 
