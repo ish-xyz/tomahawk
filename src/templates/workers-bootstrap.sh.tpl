@@ -12,6 +12,7 @@ declare -A kube_packages
 
 #Config directories
 execdir="/usr/bin"
+cnidir="/opt/cni/bin"
 bootstrap_dir="/bootstrap"
 kubelet_confdir="/var/lib/kubelet"
 kubeproxy_confdir="/var/lib/kube-proxy"
@@ -38,6 +39,7 @@ required_cmds=("yum" "tar")
 install_packages=("curl" "socat" "conntrack" "ipset")
 
 kube_packages=(
+    ["https://github.com/containernetworking/plugins/releases/download/v0.8.2/cni-plugins-linux-amd64-v0.8.2.tgz"]="$${cnidir}" \
     ["https://github.com/kubernetes-sigs/cri-tools/releases/download/v1.15.0/crictl-v1.15.0-linux-amd64.tar.gz"]="$${execdir}/" \
     ["https://github.com/containerd/containerd/releases/download/v1.2.9/containerd-1.2.9.linux-amd64.tar.gz"]="/bin/" \
     ["https://storage.googleapis.com/kubernetes-release/release/v1.15.3/bin/linux/amd64/kubectl"]="$${execdir}/kubectl" \

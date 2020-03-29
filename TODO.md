@@ -8,12 +8,18 @@
 * Controllers bootstrap key rotation or user input key
 * Remove associate_public_ip on controllers and implements SSH Bastion Host (Pay attentions to the terraform provisioners)
     * Fix controllers security group to enable only ingress from the NLB, Bastion Host and other controllers
-* Different subnet/az zone for each controllers [DONE]
-* Remote terraform state and terraform lock
-* ETCD boostrap.sh add desired state check [DONE]
-* Null resource "import boostrap files" add triggers for files [DONE]
 * Currently there's only one VPC both for controllers and workers (it needs more flexibility) [DONE -> needs testing]
 * Rework security groups controllers
 * Rework security groups workers
 * OS Security hardening
 * AWS Security hardening
+* External CLI
+* Move binaries to a private repository
+
+Current versions:
+
+* kubernetes 1.15.3
+* containerd 1.2.9
+* coredns v1.6.3
+* cni v0.7.1
+* etcd v3.4.0
