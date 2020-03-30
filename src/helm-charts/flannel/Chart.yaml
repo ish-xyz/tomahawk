@@ -1,0 +1,15 @@
+apiVersion: v1
+name: flannel
+version: 1.10.1
+appVersion: 1.6.9
+description: Flannel is a network plugin and provides the Kubernetes overlay network
+keywords:
+- flannel
+- cni-plugin
+- network
+home: https://coreos.com/flannel/docs/latest/
+sources:
+- https://github.com/ish-xyz/kubernetes-on-aws
+maintainers:
+- name: ish-xyz
+  email: ishamaraia@gmail.com

@@ -30,6 +30,7 @@ data "template_file" "workers_bootstrap" {
     PROJECT_NAME      = var.cluster_name
     KUBECONFIG_PROXY  = data.template_file.kube-proxy.rendered
     KUBE_ADDRESS      = "https://${aws_lb.controllers.dns_name}:6443"
+    DNS_ADDRESS       = var.dns_address
   }
 }
 

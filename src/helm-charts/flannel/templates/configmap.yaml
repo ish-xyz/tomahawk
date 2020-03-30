@@ -1,0 +1,11 @@
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: kube-flannel-cfg
+  namespace: kube-system
+  labels:
+    tier: node
+    app: flannel
+data:
+  cni-conf.json: {{ .Values.flannelConfig.cniConf }}
+  net-conf.json: {{ .Values.flannelConfig.netConf }}

@@ -109,3 +109,8 @@ variable "workers_type" {
   type = string
   default = "t2.large"
 }
+
+variable "dns_address" {
+  type = string
+  default = "10.32.0.10"
+}

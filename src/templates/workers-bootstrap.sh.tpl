@@ -74,6 +74,7 @@ prepare() {
 
     log "INFO: Create required directories"
     mkdir -p $${bootstrap_dir}/cmd \
+        $${cnidir} \
         $${kubeproxy_confdir} \
         $${kube_confdir} \
         $${kubelet_confdir} \
@@ -235,7 +236,7 @@ EOF
           mode: Webhook
         clusterDomain: "cluster.local"
         clusterDNS:
-          - "10.32.0.10"
+          - "${DNS_ADDRESS}"
         podCIDR: "${POD_CIDR}"
         resolvConf: "/run/NetworkManager/resolv.conf"
         runtimeRequestTimeout: "15m"
