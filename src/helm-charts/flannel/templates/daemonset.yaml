@@ -67,7 +67,7 @@ spec:
         securityContext:
           privileged: false
           capabilities:
-            add: {{ $.Values.containerCapabilities }}
+            add: ["{{ join "\",\"" $.Values.containerCapabilities }}"]
         env:
         - name: POD_NAME
           valueFrom:

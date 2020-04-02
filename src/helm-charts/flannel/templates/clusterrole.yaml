@@ -4,8 +4,8 @@ metadata:
   name: {{ .Release.Name }}
 rules:
   {{ range .Values.clusterRoleRules }}
-  - apiGroups: {{ .apiGroups }}
-    resources: {{ .resources }}
-    verbs: {{ .verbs }}
-    resourceNames: {{ .resourceNames }}
+  - apiGroups: ["{{ join "\",\"" .apiGroups }}"]
+    resources: ["{{ join "\",\"" .resources }}"]
+    verbs: ["{{ join "\",\"" .verbs }}"]
+    {{ if .resourceNames }}resourceNames: ["{{ join "\",\"" .resourceNames }}"]{{ end }}
   {{ end }}
