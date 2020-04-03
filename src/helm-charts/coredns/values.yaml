@@ -26,7 +26,7 @@ prometheus:
     namespace: ""
 
 service:
-# clusterIP: ""
+  clusterIP: "10.32.0.10"
 # loadBalancerIP: ""
 # externalTrafficPolicy: ""
   annotations:

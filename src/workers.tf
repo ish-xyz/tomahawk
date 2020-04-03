@@ -17,27 +17,27 @@ data "template_file" "kube-proxy" {
 data "template_file" "workers_bootstrap" {
   template = file("${path.module}/templates/workers-bootstrap.sh.tpl")
   vars = {
-    POD_CIDR          = var.cluster_cidr
-    CA_CERT           = module.init-ca.ca_cert
-    CA_KEY            = module.init-ca.ca_key
-    CERT_VALIDITY     = 8760
-    COUNTRY           = "UK"
-    LOCATION          = "London"
-    STATE             = "United Kingdom"
-    ORG               = "system:nodes"
-    OU                = var.cluster_name
-    CN                = "system:node"
-    PROJECT_NAME      = var.cluster_name
-    KUBECONFIG_PROXY  = data.template_file.kube-proxy.rendered
-    KUBE_ADDRESS      = "https://${aws_lb.controllers.dns_name}:6443"
-    DNS_ADDRESS       = var.dns_address
+    POD_CIDR         = var.cluster_cidr
+    CA_CERT          = module.init-ca.ca_cert
+    CA_KEY           = module.init-ca.ca_key
+    CERT_VALIDITY    = 8760
+    COUNTRY          = "UK"
+    LOCATION         = "London"
+    STATE            = "United Kingdom"
+    ORG              = "system:nodes"
+    OU               = var.cluster_name
+    CN               = "system:node"
+    PROJECT_NAME     = var.cluster_name
+    KUBECONFIG_PROXY = data.template_file.kube-proxy.rendered
+    KUBE_ADDRESS     = "https://${aws_lb.controllers.dns_name}:6443"
+    DNS_ADDRESS      = var.dns_address
   }
 }
 
 
 data "template_cloudinit_config" "bootstrap" {
-  gzip           = true
-  base64_encode  = true
+  gzip          = true
+  base64_encode = true
 
   part {
     filename     = "bootstrap.sh"
@@ -59,10 +59,10 @@ resource "aws_launch_configuration" "worker" {
 
   name_prefix = "kube-workers-"
 
-  image_id         = var.workers_ami
-  instance_type    = var.workers_type
-  security_groups  = ["${aws_security_group.workers.id}"]
-  key_name         = aws_key_pair.workers_ssh.key_name 
+  image_id        = var.workers_ami
+  instance_type   = var.workers_type
+  security_groups = ["${aws_security_group.workers.id}"]
+  key_name        = aws_key_pair.workers_ssh.key_name
 
   user_data_base64 = data.template_cloudinit_config.bootstrap.rendered
 

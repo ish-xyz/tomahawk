@@ -16,7 +16,7 @@ CERTIFICATES="certs/ca.pem certs/ca-key.pem certs/kubernetes-key.pem certs/kuber
 KUBECONFIGS="encryption-config.yaml kube-scheduler.kubeconfig kube-controller-manager.kubeconfig"
 KUBE_DATADIR="/var/lib/kubernetes"
 KUBE_CONFDIR="/etc/kubernetes/config"
-CLUSTER_IP_RANGE="10.32.0.0/24"
+SVC_CLUSTER_IP_CIDR=$3 #"10.32.0.0/24"
 BINARY_DIR="/usr/bin"
 INTERNAL_IP=$(curl http://169.254.169.254/latest/meta-data/local-ipv4)
 REQUIRED_PACKAGES=("curl" "yum")
@@ -102,7 +102,7 @@ create_apiserver() {
         --kubelet-https=true \\
         --runtime-config=api/all \\
         --service-account-key-file=${KUBE_DATADIR}/service-account.pem \\
-        --service-cluster-ip-range=${CLUSTER_IP_RANGE} \\
+        --service-cluster-ip-range=${SVC_CLUSTER_IP_CIDR} \\
         --service-node-port-range=30000-32767 \\
         --tls-cert-file=${KUBE_DATADIR}/kubernetes.pem \\
         --tls-private-key-file=${KUBE_DATADIR}/kubernetes-key.pem \\
@@ -138,7 +138,7 @@ create_controller_manager() {
         --leader-elect=true \\
         --root-ca-file=${KUBE_DATADIR}/ca.pem \\
         --service-account-private-key-file=${KUBE_DATADIR}/service-account-key.pem \\
-        --service-cluster-ip-range=${CLUSTER_IP_RANGE} \\
+        --service-cluster-ip-range=${SVC_CLUSTER_IP_CIDR} \\
         --use-service-account-credentials=true \\
         --v=2
     Restart=on-failure

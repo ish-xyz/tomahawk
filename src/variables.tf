@@ -16,6 +16,11 @@ variable "cluster_cidr" {
 
 ## Controllers instances
 
+variable "svc_cluster_ip_cidr" {
+  type    = string
+  default = "10.32.0.0/24"
+}
+
 variable "controllers_vpc_id" {
   type    = string
   default = "vpc-f670c791"
@@ -106,11 +111,11 @@ variable "workers_tags" {
 }
 
 variable "workers_type" {
-  type = string
+  type    = string
   default = "t2.large"
 }
 
 variable "dns_address" {
-  type = string
+  type    = string
   default = "10.32.0.10"
 }

@@ -69,43 +69,43 @@ resource "aws_security_group" "controllers" {
 }
 
 resource "aws_security_group_rule" "allow_egress_all" {
-  type              = "egress"
-  to_port           = 0
-  from_port         = 0
-  protocol          = "-1"
-  cidr_blocks       = ["0.0.0.0/0"]
-  ipv6_cidr_blocks  = ["::/0"]
+  type             = "egress"
+  to_port          = 0
+  from_port        = 0
+  protocol         = "-1"
+  cidr_blocks      = ["0.0.0.0/0"]
+  ipv6_cidr_blocks = ["::/0"]
 
   security_group_id = aws_security_group.controllers.id
 }
 
 resource "aws_security_group_rule" "allow_etcd" {
-  type              = "ingress"
-  from_port         = 2379
-  to_port           = 2380
-  protocol          = "tcp"
-  cidr_blocks       = data.aws_subnet.controllers.*.cidr_block
+  type        = "ingress"
+  from_port   = 2379
+  to_port     = 2380
+  protocol    = "tcp"
+  cidr_blocks = data.aws_subnet.controllers.*.cidr_block
 
   security_group_id = aws_security_group.controllers.id
 }
 
 resource "aws_security_group_rule" "allow_kube_api_ext" {
-  type              = "ingress"
-  from_port         = 6443
-  to_port           = 6443
-  protocol          = "tcp"
-  cidr_blocks       = ["0.0.0.0/0"]
-  ipv6_cidr_blocks  = ["::/0"]
+  type             = "ingress"
+  from_port        = 6443
+  to_port          = 6443
+  protocol         = "tcp"
+  cidr_blocks      = ["0.0.0.0/0"]
+  ipv6_cidr_blocks = ["::/0"]
 
   security_group_id = aws_security_group.controllers.id
 }
 
 resource "aws_security_group_rule" "allow_ssh_ext" {
-  type              = "ingress"
-  from_port         = 22
-  to_port           = 22
-  protocol          = "tcp"
-  cidr_blocks       = ["0.0.0.0/0"]
+  type        = "ingress"
+  from_port   = 22
+  to_port     = 22
+  protocol    = "tcp"
+  cidr_blocks = ["0.0.0.0/0"]
 
   security_group_id = aws_security_group.controllers.id
 }
@@ -290,7 +290,7 @@ resource "null_resource" "bootstrap-controllers" {
     inline = [
       "chmod +x ~/bootstrap/*.sh",
       "cd ~/bootstrap && sudo ./etcd_bootstrap.sh \"${join(" ", aws_instance.controllers.*.private_ip)}\"",
-      "cd ~/bootstrap && sudo ./control_plane_bootstrap.sh \"${join(" ", aws_instance.controllers.*.private_ip)}\" ${var.cluster_cidr}",
+      "cd ~/bootstrap && sudo ./control_plane_bootstrap.sh \"${join(" ", aws_instance.controllers.*.private_ip)}\" ${var.cluster_cidr} ${var.svc_cluster_ip_cidr}",
       "rm -rf ~/bootstrap"
     ]
   }

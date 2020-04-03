@@ -15,7 +15,7 @@ flannelConfig:
       portMappings: true
 
   netConf:
-    Network: 10.244.0.0/16
+    Network: 10.200.0.0/16
     Backend:
       Type: vxlan    
 
