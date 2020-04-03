@@ -14,30 +14,14 @@ variable "cluster_cidr" {
   default = "10.200.0.0/16"
 }
 
-## Controllers instances
+## Workers
 
-variable "svc_cluster_ip_cidr" {
-  type    = string
-  default = "10.32.0.0/24"
-}
-
-variable "controllers_vpc_id" {
-  type    = string
-  default = "vpc-f670c791"
-}
-
-variable "controllers_count" {
-  type    = number
-  default = 3
-}
-
-variable "controllers_subnets" {
-  type = list
-  default = [
-    "subnet-0059f167",
-    "subnet-6c9a2b25",
-    "subnet-e712e6bc"
-  ]
+variable "workers_tags" {
+  type = map
+  default = {
+    Name        = "kube-workers-asg"
+    Environment = "development"
+  }
 }
 
 variable "kube_hostnames" {
@@ -49,73 +33,4 @@ variable "kube_hostnames" {
     "kubernetes.default.svc.cluster",
     "kubernetes.svc.cluster.local"
   ]
-}
-
-
-variable "controllers_ami" {
-  type    = string
-  default = "ami-0334a7a72f69e4d0f"
-}
-
-## NLB
-
-variable "nlb_bucket" {
-  type    = string
-  default = "kube-controllers-nlb"
-}
-
-variable "nlb_bucket_prefix" {
-  type    = string
-  default = "logs"
-}
-
-variable "nlb_name" {
-  type    = string
-  default = "kube-controllers-nlb"
-}
-
-## Workers
-
-#*
-variable "workers_vpc_id" {
-  type    = string
-  default = "vpc-f670c791"
-}
-
-variable "workers_min" {
-  type    = number
-  default = 2
-}
-
-variable "workers_max" {
-  type    = number
-  default = 6
-}
-
-variable "workers_count" {
-  type    = number
-  default = 4
-}
-
-variable "workers_ami" {
-  type    = string
-  default = "ami-0334a7a72f69e4d0f"
-}
-
-variable "workers_tags" {
-  type = map
-  default = {
-    Name        = "kube-workers-asg"
-    Environment = "development"
-  }
-}
-
-variable "workers_type" {
-  type    = string
-  default = "t2.large"
-}
-
-variable "dns_address" {
-  type    = string
-  default = "10.32.0.10"
 }

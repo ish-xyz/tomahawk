@@ -23,7 +23,7 @@ resource "aws_lb_target_group" "controllers" {
   name     = "kube-controllers-tg"
   port     = 6443
   protocol = "TCP"
-  vpc_id   = var.controllers_vpc_id
+  vpc_id   = var.vpc_id
 }
 
 
@@ -39,8 +39,8 @@ resource "aws_lb_listener" "controllers" {
 
 resource "aws_iam_server_certificate" "nlb" {
   name             = "kube_controllers_nlb_certificate"
-  certificate_body = module.kubernetes.cert
-  private_key      = module.kubernetes.key
+  certificate_body = var.kube_cert
+  private_key      = var.kube_key
 }
 
 

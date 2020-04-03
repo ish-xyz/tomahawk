@@ -1,11 +1,11 @@
 resource "local_file" "controllers_ssh" {
-  content         = tls_private_key.controllers_ssh.private_key_pem
+  content         = module.controllers.ssh_private_key
   filename        = "${path.module}/.local/ssh-controllers.pem"
   file_permission = "0600"
 }
 
 resource "local_file" "workers_ssh" {
-  content         = tls_private_key.workers_ssh.private_key_pem
+  content         = module.workers.ssh_private_key
   filename        = "${path.module}/.local/ssh-workers.pem"
   file_permission = "0600"
 }
@@ -36,7 +36,7 @@ data "template_file" "remote_admin" {
     client_key   = base64encode(module.admin.key)
     ca_cert      = base64encode(module.init-ca.ca_cert)
     user         = "admin"
-    kube_address = "https://${aws_lb.controllers.dns_name}:6443"
+    kube_address = module.controllers.kube_address
   }
 }
 

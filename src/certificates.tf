@@ -1,7 +1,6 @@
 #Create Certificate Authority
 module "init-ca" {
-  source          = "ish-xyz/certificates-generator/tls"
-  version         = "0.1.0"
+  source          = "./submodules/tls-certificates-generator"
   cn              = "Kubernetes"
   org             = "Kubernetes"
   ou              = "CA"
@@ -12,8 +11,7 @@ module "init-ca" {
 
 #Generate certificates
 module "admin" {
-  source          = "ish-xyz/certificates-generator/tls"
-  version         = "0.1.0"
+  source          = "./submodules/tls-certificates-generator"
   cn              = "admin"
   org             = "system:masters"
   ou              = var.cluster_name
@@ -25,8 +23,7 @@ module "admin" {
 }
 
 module "kube-controller-manager" {
-  source          = "ish-xyz/certificates-generator/tls"
-  version         = "0.1.0"
+  source          = "./submodules/tls-certificates-generator"
   cn              = "system:kube-controller-manager"
   org             = "system:kube-controller-manager"
   ou              = var.cluster_name
@@ -38,8 +35,7 @@ module "kube-controller-manager" {
 }
 
 module "kube-proxy" {
-  source          = "ish-xyz/certificates-generator/tls"
-  version         = "0.1.0"
+  source          = "./submodules/tls-certificates-generator"
   cn              = "system:kube-proxy"
   org             = "system:node-proxier"
   ou              = var.cluster_name
@@ -51,8 +47,7 @@ module "kube-proxy" {
 }
 
 module "kube-scheduler" {
-  source          = "ish-xyz/certificates-generator/tls"
-  version         = "0.1.0"
+  source          = "./submodules/tls-certificates-generator"
   cn              = "system:kube-scheduler"
   org             = "system:kube-scheduler"
   ou              = var.cluster_name
@@ -64,8 +59,7 @@ module "kube-scheduler" {
 }
 
 module "service-account" {
-  source          = "ish-xyz/certificates-generator/tls"
-  version         = "0.1.0"
+  source          = "./submodules/tls-certificates-generator"
   cn              = "service-accounts"
   org             = "Kubernetes"
   ou              = var.cluster_name
@@ -77,8 +71,7 @@ module "service-account" {
 }
 
 module "kubernetes" {
-  source          = "ish-xyz/certificates-generator/tls"
-  version         = "0.1.0"
+  source          = "./submodules/tls-certificates-generator"
   cn              = "kubernetes"
   org             = "Kubernetes"
   ou              = var.cluster_name
@@ -86,7 +79,7 @@ module "kubernetes" {
   ca_key          = module.init-ca.ca_key
   country         = "United Kindgom"
   location        = "London"
-  dns_names       = concat(aws_instance.controllers.*.public_dns, [aws_lb.controllers.dns_name], var.kube_hostnames)
-  ip_addresses    = concat(["10.32.0.1", "127.0.0.1"], aws_instance.controllers.*.private_ip, aws_instance.controllers.*.public_ip)
+  dns_names       = concat(module.controllers.public_ips, [module.controllers.lb_dns_name], var.kube_hostnames)
+  ip_addresses    = concat(["10.32.0.1", "127.0.0.1"], module.controllers.private_ips, module.controllers.public_ips)
   validity_period = 8760
 }
