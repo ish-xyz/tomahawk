@@ -1,6 +1,6 @@
 ## Tomahawk - A Kubernetes Bootstrap Tool
 
-This tool uses a combination of terrform and bash to install and configure Kubernetes on AWS and on-prem infrastructures.
+This tool creates and manages the required infrastructure and configurations needed for one or more Kubernetes clusters on AWS.
 
 ## Why use it?
 
