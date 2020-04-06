@@ -1,11 +1,7 @@
-src/.terraform/*
-src/installer/.bootstrap.pem
-src/installer/.workers.pem
-src/.terraform
-src/.local
-src/.local/*
-src/terraform.tfstate*
-src/.terraform.tfstate.lock.info
-tmp/terraform.tfstate*
-tmp/.terraform
+lin/terraform-aws/.terraform/*
+lin/terraform-aws/.local/*
+lib/terraform-aws/.local
+lib/terraform-aws/.terraform
+lib/terraform-aws/terraform.tfstate*
+lib/terraform-aws/.terraform.tfstate.lock.info
 keys
