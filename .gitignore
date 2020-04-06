@@ -1,7 +1,7 @@
-lin/terraform-aws/.terraform/*
-lin/terraform-aws/.local/*
-lib/terraform-aws/.local
-lib/terraform-aws/.terraform
-lib/terraform-aws/terraform.tfstate*
-lib/terraform-aws/.terraform.tfstate.lock.info
+terraform/.terraform/*
+terraform/.local/*
+terraform/.local
+terraform/.terraform
+terraform/terraform.tfstate*
+terraform/.terraform.tfstate.lock.info
 keys
