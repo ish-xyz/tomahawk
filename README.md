@@ -1,4 +1,4 @@
-## Tomahawk - A Kubernetes Bootstrap Tool
+## Tomahawk - A Kubernetes Bootstrap Tool for AWS
 
 This tool creates and manages the required infrastructure and configurations needed for one or more Kubernetes clusters on AWS.
 
