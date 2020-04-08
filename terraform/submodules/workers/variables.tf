@@ -76,3 +76,8 @@ variable "controllers_lb_address" {
   description = "Controllers LB address - needs to be an FQDN {protocol}://{lb}:{port}"
   type        = string
 }
+
+variable "workers_subnets" {
+  description = "Workers private subnets to use for the ASG instances"
+  type        = list
+}

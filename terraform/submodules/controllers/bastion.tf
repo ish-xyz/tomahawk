@@ -1,14 +1,9 @@
-# create instance
-# create bucket to address logging 
-# configure audit
-# Change security group on controllers 
-
 resource "tls_private_key" "bastion_ssh" {
   algorithm = "RSA"
 }
 
 resource "aws_key_pair" "bastion" {
-  key_name   = "bastion-${var.cluster_name}"
+  key_name   = "${var.environment}-${var.cluster_name}-bastion"
   public_key = tls_private_key.bastion_ssh.public_key_openssh
 }
 
@@ -24,15 +19,15 @@ resource "aws_instance" "bastion" {
   ]
 
   tags = {
-    Name        = "bastion-${count.index}"
-    Role        = "bastion-host"
+    Name        = "${var.bastion_hosts_prefix}-${count.index}"
+    Role        = "bastion"
     Environment = var.environment
     Cluster     = var.cluster_name
   }
 }
 
 resource "aws_security_group" "bastion" {
-  name   = "bastion-${var.cluster_name}"
+  name   = "${var.environment}-${var.cluster_name}-bastion"
   vpc_id = var.vpc_id
 }
 

@@ -23,6 +23,10 @@ output "lb_dns_name" {
   value = aws_lb.controllers.dns_name
 }
 
+output "bastion_hosts" {
+  value = aws_instance.bastion.*.public_ip
+}
+
 output "bastion_ssh_private_key" {
   value = tls_private_key.bastion_ssh.private_key_pem
 }

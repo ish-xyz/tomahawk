@@ -184,8 +184,7 @@ EOF
 
     [alt_names]
     DNS.1 = $(curl http://169.254.169.254/latest/meta-data/local-ipv4)
-    DNS.2 = $(curl http://169.254.169.254/latest/meta-data/public-ipv4)
-    DNS.3 = $(hostname -f)
+    DNS.2 = $(hostname -f)
 EOF
 
     openssl x509 -req -in worker.csr -CA $${ca_cert_filename} \
@@ -259,6 +258,7 @@ EOF
             --container-runtime-endpoint=unix:///var/run/containerd/containerd.sock \\
             --image-pull-progress-deadline=2m \\
             --kubeconfig=$${kubelet_config} \\
+            --cloud-provider="aws" \\
             --network-plugin=cni \\
             --register-node=true \\
             --v=2
@@ -308,9 +308,9 @@ configure_resolv_conf() {
 
     log "INFO: Configure /etc/resolv.conf with Google Nameservers"
     cat <<EOF | sed 's/        //' | tee /etc/resolv.conf
-    nameserver 8.8.8.8
-	nameserver 8.8.4.4
-	nameserver $(cat /etc/resolv.conf | grep nameserver | awk {'print $2'} | tail -n1)
+        nameserver 8.8.8.8
+        nameserver 8.8.4.4
+        nameserver $(cat /etc/resolv.conf | grep nameserver | awk {'print $2'} | tail -n1)
 EOF
 
 }

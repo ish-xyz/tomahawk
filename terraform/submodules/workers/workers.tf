@@ -1,6 +1,4 @@
-data "aws_subnet_ids" "workers" {
-  vpc_id = var.workers_vpc_id
-}
+# Workers ASG configuration
 
 data "template_file" "kubeconfig" {
   template = file("${path.module}/templates/kubeconfig.yml.tpl")
@@ -51,7 +49,7 @@ resource "tls_private_key" "workers_ssh" {
 }
 
 resource "aws_key_pair" "workers_ssh" {
-  key_name   = "workers-${var.cluster_name}"
+  key_name   = "${var.environment}-${var.cluster_name}-workers"
   public_key = tls_private_key.workers_ssh.public_key_openssh
 }
 
@@ -72,7 +70,7 @@ resource "aws_launch_configuration" "worker" {
 }
 
 resource "aws_security_group" "workers" {
-  name   = "workers-${var.cluster_name}"
+  name   = "${var.environment}-${var.cluster_name}-workers"
   vpc_id = var.workers_vpc_id
 }
 
@@ -100,12 +98,13 @@ resource "aws_autoscaling_group" "worker" {
 
   name = aws_launch_configuration.worker.name
 
-  min_size             = var.workers_min
-  desired_capacity     = var.workers_count
-  max_size             = var.workers_max
-  health_check_type    = "EC2"
+  min_size          = var.workers_min
+  desired_capacity  = var.workers_count
+  max_size          = var.workers_max
+  health_check_type = "EC2"
+  #target_group_arns = aws_lb_target_group.workers.*.arn # ${aws_lb_target_group.lbtg.arn}"]
   launch_configuration = aws_launch_configuration.worker.name
-  vpc_zone_identifier  = data.aws_subnet_ids.workers.ids
+  vpc_zone_identifier  = var.workers_subnets
 
 
   lifecycle {

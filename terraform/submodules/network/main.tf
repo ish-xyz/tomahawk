@@ -9,7 +9,9 @@
 #VPC configuration
 resource "aws_vpc" "main" {
 
-  cidr_block = var.vpc_cidr
+  cidr_block           = var.vpc_cidr
+  enable_dns_support   = true
+  enable_dns_hostnames = true
 
   tags = {
     Name        = var.vpc_name
@@ -66,15 +68,57 @@ resource "aws_route_table" "internet_gateway" {
   }
 
   tags = {
-    Name        = "${var.vpc_name}-ig"
+    Name        = "${var.vpc_name}-igw"
     Environment = var.environment
   }
 }
 
-
 # Route table association with public subnets and internet gateway
-resource "aws_route_table_association" "task" {
+resource "aws_route_table_association" "igw" {
   count          = length(var.pub_subnets_cidr)
   subnet_id      = element(aws_subnet.pub_subnets.*.id, count.index)
   route_table_id = aws_route_table.internet_gateway.id
+}
+
+
+# Nat Gateway configuration
+
+resource "aws_nat_gateway" "main" {
+  count         = length(aws_subnet.pub_subnets)
+  allocation_id = aws_eip.ngw.*.id[count.index]
+  subnet_id     = aws_subnet.pub_subnets.*.id[count.index]
+}
+
+resource "random_integer" "ngw_index" {
+  min = 0
+  max = length(aws_nat_gateway.main)
+}
+
+resource "aws_eip" "ngw" {
+  count = length(aws_subnet.pub_subnets)
+  vpc   = true
+}
+
+resource "aws_route_table" "ngw" {
+
+  vpc_id = aws_vpc.main.id
+
+  tags = {
+    Name        = "${var.vpc_name}-ngw"
+    Environment = var.environment
+  }
+}
+
+resource "aws_route_table_association" "ngw" {
+  count          = length(var.prv_subnets_cidr)
+  subnet_id      = element(aws_subnet.prv_subnets.*.id, count.index)
+  route_table_id = aws_route_table.ngw.id
+}
+
+resource "aws_route" "ngw" {
+
+  route_table_id         = aws_route_table.ngw.id
+  destination_cidr_block = "0.0.0.0/0"
+
+  nat_gateway_id = element(aws_nat_gateway.main.*.id, random_integer.ngw_index.result)
 }

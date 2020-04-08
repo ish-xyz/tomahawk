@@ -164,7 +164,19 @@ variable "bastion_subnets" {
 }
 
 
-# Default
+# Defaults
+
+variable "bastion_hosts_prefix" {
+  description = "The prefix for the bastion hosts name"
+  type        = string
+  default     = "bastion"
+}
+
+variable "controllers_prefix" {
+  description = "The prefix for the controllers instances name"
+  type        = string
+  default     = "controller"
+}
 
 variable "ssh_user" {
   description = "The ssh user used to connect and configure the controllers"

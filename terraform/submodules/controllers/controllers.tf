@@ -50,12 +50,12 @@ resource "tls_private_key" "controllers_ssh" {
 }
 
 resource "aws_key_pair" "controllers_ssh" {
-  key_name   = "controllers-${var.cluster_name}"
+  key_name   = "${var.environment}-${var.cluster_name}-controllers"
   public_key = tls_private_key.controllers_ssh.public_key_openssh
 }
 
 resource "aws_security_group" "controllers" {
-  name   = "controllers-${var.cluster_name}"
+  name   = "${var.environment}-${var.cluster_name}-controllers"
   vpc_id = var.vpc_id
 }
 
@@ -96,7 +96,7 @@ resource "aws_security_group_rule" "allow_ssh_ext" {
   from_port   = 22
   to_port     = 22
   protocol    = "tcp"
-  cidr_blocks = ["0.0.0.0/0"]
+  cidr_blocks = split(" ", "${join("/32 ", aws_instance.bastion.*.private_ip)}/32")
 
   security_group_id = aws_security_group.controllers.id
 }
@@ -118,21 +118,22 @@ resource "aws_instance" "controllers" {
   ]
 
   tags = {
-    Name        = "controller-${count.index}"
+    Name        = "${var.controllers_prefix}-${count.index}"
     Role        = "controllers"
     Environment = var.environment
     Cluster     = var.cluster_name
   }
 
   connection {
-    type             = "ssh"
-    bastion_host     = aws_instance.bastion.0.public_ip # TODO
-    bastion_user     = var.bastion_user
-    bastion_host_key = tls_private_key.bastion_ssh.private_key_pem
-    bastion_port     = var.bastion_port
-    user             = var.ssh_user
-    private_key      = tls_private_key.controllers_ssh.private_key_pem
-    host             = self.private_ip
+    type                = "ssh"
+    timeout             = "7m"
+    bastion_host        = aws_instance.bastion.0.public_ip # TODO
+    bastion_user        = var.bastion_user
+    bastion_private_key = tls_private_key.bastion_ssh.private_key_pem
+    bastion_port        = var.bastion_port
+    user                = var.ssh_user
+    private_key         = tls_private_key.controllers_ssh.private_key_pem
+    host                = self.private_ip
   }
 
   provisioner "remote-exec" {
@@ -167,14 +168,15 @@ resource "null_resource" "import_bootstrap_files" {
   }
 
   connection {
-    type             = "ssh"
-    bastion_host     = aws_instance.bastion.0.public_ip # TODO
-    bastion_user     = var.bastion_user
-    bastion_host_key = tls_private_key.bastion_ssh.private_key_pem
-    bastion_port     = var.bastion_port
-    user             = var.ssh_user
-    private_key      = tls_private_key.controllers_ssh.private_key_pem
-    host             = element(aws_instance.controllers.*.private_ip, count.index)
+    type                = "ssh"
+    timeout             = "7m"
+    bastion_host        = aws_instance.bastion.0.public_ip # TODO
+    bastion_user        = var.bastion_user
+    bastion_private_key = tls_private_key.bastion_ssh.private_key_pem
+    bastion_port        = var.bastion_port
+    user                = var.ssh_user
+    private_key         = tls_private_key.controllers_ssh.private_key_pem
+    host                = element(aws_instance.controllers.*.private_ip, count.index)
   }
 
   #Import bootstrap scripts
@@ -279,14 +281,15 @@ resource "null_resource" "bootstrap-controllers" {
   }
 
   connection {
-    type             = "ssh"
-    bastion_host     = aws_instance.bastion.0.public_ip # TODO
-    bastion_user     = var.bastion_user
-    bastion_host_key = tls_private_key.bastion_ssh.private_key_pem
-    bastion_port     = var.bastion_port
-    user             = var.ssh_user
-    private_key      = tls_private_key.controllers_ssh.private_key_pem
-    host             = element(aws_instance.controllers.*.private_ip, count.index)
+    type                = "ssh"
+    timeout             = "7m"
+    bastion_host        = aws_instance.bastion.0.public_ip # TODO
+    bastion_user        = var.bastion_user
+    bastion_private_key = tls_private_key.bastion_ssh.private_key_pem
+    bastion_port        = var.bastion_port
+    user                = var.ssh_user
+    private_key         = tls_private_key.controllers_ssh.private_key_pem
+    host                = element(aws_instance.controllers.*.private_ip, count.index)
   }
 
   provisioner "remote-exec" {

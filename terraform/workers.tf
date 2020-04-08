@@ -21,6 +21,7 @@ module "workers" {
   workers_count          = 4
   workers_tags           = var.workers_tags
   workers_type           = "t2.large"
+  workers_subnets        = module.network.private_subnets
   dns_address            = "10.32.0.10"
   controllers_lb_address = module.controllers.kube_address
 }

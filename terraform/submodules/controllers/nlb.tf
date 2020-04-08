@@ -1,5 +1,3 @@
-data "aws_elb_service_account" "main" {}
-
 resource "aws_lb" "controllers" {
   name               = var.nlb_name
   internal           = false
@@ -20,7 +18,7 @@ resource "aws_lb" "controllers" {
 }
 
 resource "aws_lb_target_group" "controllers" {
-  name     = "kube-controllers-tg"
+  name     = "${var.nlb_name}-controllers"
   port     = 6443
   protocol = "TCP"
   vpc_id   = var.vpc_id
@@ -37,14 +35,7 @@ resource "aws_lb_listener" "controllers" {
   }
 }
 
-resource "aws_iam_server_certificate" "nlb" {
-  name             = "kube_controllers_nlb_certificate"
-  certificate_body = var.kube_cert
-  private_key      = var.kube_key
-}
-
-
-resource "aws_lb_target_group_attachment" "test" {
+resource "aws_lb_target_group_attachment" "controllers" {
   count            = var.controllers_count
   target_group_arn = aws_lb_target_group.controllers.arn
   target_id        = element(aws_instance.controllers.*.id, count.index)
