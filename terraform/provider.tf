@@ -5,7 +5,7 @@ provider "aws" {
 
 provider "helm" {
   kubernetes {
-    host     = "https://${aws_lb.controllers.dns_name}:6443"
+    host     = module.controllers.kube_address
     username = "admin"
 
     client_certificate     = module.admin.cert

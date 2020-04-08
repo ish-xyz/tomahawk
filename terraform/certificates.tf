@@ -1,4 +1,4 @@
-#Create Certificate Authority
+# Create Certificate Authority
 module "init-ca" {
   source          = "./submodules/tls-certificates-generator"
   cn              = "Kubernetes"
@@ -9,7 +9,7 @@ module "init-ca" {
   validity_period = 8760
 }
 
-#Generate certificates
+# Generate certificates
 module "admin" {
   source          = "./submodules/tls-certificates-generator"
   cn              = "admin"
@@ -79,7 +79,7 @@ module "kubernetes" {
   ca_key          = module.init-ca.ca_key
   country         = "United Kindgom"
   location        = "London"
-  dns_names       = concat(module.controllers.public_ips, [module.controllers.lb_dns_name], var.kube_hostnames)
-  ip_addresses    = concat(["10.32.0.1", "127.0.0.1"], module.controllers.private_ips, module.controllers.public_ips)
+  dns_names       = concat([module.controllers.lb_dns_name], var.kube_hostnames)
+  ip_addresses    = concat(["10.32.0.1", "127.0.0.1"], module.controllers.private_ips)
   validity_period = 8760
 }

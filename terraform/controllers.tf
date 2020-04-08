@@ -4,29 +4,37 @@
 
 module "controllers" {
 
-  source = "./submodules/kube-controllers"
+  source = "./submodules/controllers"
+
   # Metadata
   cluster_name = var.cluster_name
   environment  = var.environment
   cluster_cidr = var.cluster_cidr
 
   # Controllers configuration
+  controllers_type    = "t2.micro"
   svc_cluster_ip_cidr = "10.32.0.0/24"
-  vpc_id              = "vpc-f670c791"
+  vpc_id              = module.network.vpc_id
   kube_hostnames      = var.kube_hostnames
-  controllers_count   = 3
-  controllers_subnets = [
-    "subnet-0059f167",
-    "subnet-6c9a2b25",
-    "subnet-e712e6bc"
-  ]
+  controllers_count   = length(module.network.private_subnets) % 2 != 1 ? length(module.network.private_subnets) - 1 : length(module.network.private_subnets) # Ensure odd numbers
+  controllers_subnets = module.network.private_subnets
+  controllers_cidrs   = var.prv_subnets_cidrs
 
-  #Network LoadBalancer - 
+  # Bastion host configuration
+  bastion_count   = 1
+  bastion_type    = "t2.micro"
+  bastion_user    = "centos"
+  bastion_port    = 22
+  bastion_subnets = module.network.public_subnets
+
+
+  # Network LoadBalancer
   nlb_bucket        = "kube-controllers-nlb"
   nlb_bucket_prefix = "logs"
   nlb_name          = "kube-controllers-nlb"
+  nlb_subnets       = module.network.public_subnets
 
-  #Certificates
+  # Certificates
   ca_cert                 = module.init-ca.ca_cert
   ca_key                  = module.init-ca.ca_key
   admin_cert              = module.admin.cert

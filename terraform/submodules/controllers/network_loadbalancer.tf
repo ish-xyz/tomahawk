@@ -4,7 +4,7 @@ resource "aws_lb" "controllers" {
   name               = var.nlb_name
   internal           = false
   load_balancer_type = "network"
-  subnets            = var.controllers_subnets
+  subnets            = var.nlb_subnets
 
   access_logs {
     bucket  = aws_s3_bucket.nlb_logs.bucket

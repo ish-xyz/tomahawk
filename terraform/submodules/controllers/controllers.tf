@@ -2,15 +2,6 @@ data "aws_vpc" "controllers" {
   id = var.vpc_id
 }
 
-data "aws_subnet_ids" "controllers" {
-  vpc_id = var.vpc_id
-}
-
-data "aws_subnet" "controllers" {
-  count = length(data.aws_subnet_ids.controllers.ids)
-  id    = element(tolist(data.aws_subnet_ids.controllers.ids), count.index)
-}
-
 data "template_file" "kube-encryption" {
   template = file("${path.module}/templates/kube-encryption.yml.tpl")
   vars = {
@@ -59,12 +50,12 @@ resource "tls_private_key" "controllers_ssh" {
 }
 
 resource "aws_key_pair" "controllers_ssh" {
-  key_name   = "kube-controllers"
+  key_name   = "controllers-${var.cluster_name}"
   public_key = tls_private_key.controllers_ssh.public_key_openssh
 }
 
 resource "aws_security_group" "controllers" {
-  name   = "kube-controllers"
+  name   = "controllers-${var.cluster_name}"
   vpc_id = var.vpc_id
 }
 
@@ -84,7 +75,7 @@ resource "aws_security_group_rule" "allow_etcd" {
   from_port   = 2379
   to_port     = 2380
   protocol    = "tcp"
-  cidr_blocks = data.aws_subnet.controllers.*.cidr_block
+  cidr_blocks = var.controllers_cidrs
 
   security_group_id = aws_security_group.controllers.id
 }
@@ -120,24 +111,28 @@ resource "aws_instance" "controllers" {
   count         = var.controllers_count
   key_name      = aws_key_pair.controllers_ssh.key_name
   subnet_id     = element(var.controllers_subnets, count.index)
-  instance_type = "t2.micro"
+  instance_type = var.controllers_type
 
   vpc_security_group_ids = [
     "${aws_security_group.controllers.id}"
   ]
 
   tags = {
-    Name        = "kube-controller-${count.index}"
+    Name        = "controller-${count.index}"
     Role        = "controllers"
     Environment = var.environment
     Cluster     = var.cluster_name
   }
 
   connection {
-    type        = "ssh"
-    user        = var.ssh_user
-    private_key = tls_private_key.controllers_ssh.private_key_pem
-    host        = self.public_ip
+    type             = "ssh"
+    bastion_host     = aws_instance.bastion.0.public_ip # TODO
+    bastion_user     = var.bastion_user
+    bastion_host_key = tls_private_key.bastion_ssh.private_key_pem
+    bastion_port     = var.bastion_port
+    user             = var.ssh_user
+    private_key      = tls_private_key.controllers_ssh.private_key_pem
+    host             = self.private_ip
   }
 
   provisioner "remote-exec" {
@@ -172,10 +167,14 @@ resource "null_resource" "import_bootstrap_files" {
   }
 
   connection {
-    type        = "ssh"
-    user        = var.ssh_user
-    private_key = tls_private_key.controllers_ssh.private_key_pem
-    host        = element(aws_instance.controllers.*.public_ip, count.index)
+    type             = "ssh"
+    bastion_host     = aws_instance.bastion.0.public_ip # TODO
+    bastion_user     = var.bastion_user
+    bastion_host_key = tls_private_key.bastion_ssh.private_key_pem
+    bastion_port     = var.bastion_port
+    user             = var.ssh_user
+    private_key      = tls_private_key.controllers_ssh.private_key_pem
+    host             = element(aws_instance.controllers.*.private_ip, count.index)
   }
 
   #Import bootstrap scripts
@@ -280,10 +279,14 @@ resource "null_resource" "bootstrap-controllers" {
   }
 
   connection {
-    type        = "ssh"
-    user        = var.ssh_user
-    private_key = tls_private_key.controllers_ssh.private_key_pem
-    host        = element(aws_instance.controllers.*.public_ip, count.index)
+    type             = "ssh"
+    bastion_host     = aws_instance.bastion.0.public_ip # TODO
+    bastion_user     = var.bastion_user
+    bastion_host_key = tls_private_key.bastion_ssh.private_key_pem
+    bastion_port     = var.bastion_port
+    user             = var.ssh_user
+    private_key      = tls_private_key.controllers_ssh.private_key_pem
+    host             = element(aws_instance.controllers.*.private_ip, count.index)
   }
 
   provisioner "remote-exec" {

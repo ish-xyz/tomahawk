@@ -4,6 +4,12 @@ resource "local_file" "controllers_ssh" {
   file_permission = "0600"
 }
 
+resource "local_file" "bastion_ssh" {
+  content         = module.controllers.bastion_ssh_private_key
+  filename        = "${path.module}/.local/ssh-bastion.pem"
+  file_permission = "0600"
+}
+
 resource "local_file" "workers_ssh" {
   content         = module.workers.ssh_private_key
   filename        = "${path.module}/.local/ssh-workers.pem"
@@ -45,3 +51,4 @@ resource "local_file" "remote_admin" {
   filename        = "${path.module}/.local/admin.kubeconfig"
   file_permission = "0644"
 }
+

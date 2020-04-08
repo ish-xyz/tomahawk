@@ -17,6 +17,16 @@ variable "cluster_cidr" {
 
 ## Controllers instances
 
+variable "controllers_type" {
+  description = "Controllers instance type"
+  type        = string
+}
+
+variable "controllers_cidrs" {
+  description = "Controllers subnets CIDRs"
+  type        = list
+}
+
 variable "svc_cluster_ip_cidr" {
   description = "CIDR reserved for Kubernetes services"
   type        = string
@@ -59,6 +69,11 @@ variable "nlb_bucket_prefix" {
 variable "nlb_name" {
   description = "Network LoadBalancer name"
   type        = string
+}
+
+variable "nlb_subnets" {
+  description = "Network LoadBalancer Subnets list - Public Subnets"
+  type        = list
 }
 
 variable "ca_cert" {
@@ -121,16 +136,50 @@ variable "kube_key" {
   type        = string
 }
 
+# Bastion host
+
+variable "bastion_count" {
+  description = "Number of bastion host to provision"
+  type        = number
+}
+
+variable "bastion_type" {
+  description = "Bastion host instance type"
+  type        = string
+}
+
+variable "bastion_user" {
+  description = "Bastion host ssh user"
+  type        = string
+}
+
+variable "bastion_port" {
+  description = "Bastion host ssh port"
+  type        = string
+}
+
+variable "bastion_subnets" {
+  description = "Bastion host subnets"
+  type        = list
+}
+
+
 # Default
 
 variable "ssh_user" {
   description = "The ssh user used to connect and configure the controllers"
-  type = string
-  default = "centos"
+  type        = string
+  default     = "centos"
 }
 
 variable "controllers_ami" {
   description = "AMI used for controllers - currently the only one supported"
+  type        = string
+  default     = "ami-0334a7a72f69e4d0f"
+}
+
+variable "bastion_ami" {
+  description = "AMI used for bastion host - currently the only one supported"
   type        = string
   default     = "ami-0334a7a72f69e4d0f"
 }

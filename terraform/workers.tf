@@ -1,7 +1,7 @@
 # Module to create an ASG for workers and deploy the init script within them.
 
 module "workers" {
-  source = "./submodules/kube-workers"
+  source = "./submodules/workers"
 
   # Metadata
   cluster_name = var.cluster_name
@@ -15,7 +15,7 @@ module "workers" {
   kube_proxy_key  = module.kube-proxy.key
 
   # Workers Configuration
-  workers_vpc_id         = "vpc-f670c791"
+  workers_vpc_id         = module.network.vpc_id
   workers_min            = 2
   workers_max            = 6
   workers_count          = 4

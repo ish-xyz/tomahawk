@@ -1,6 +1,7 @@
 ### TODO
 
 1. Improve security groups and personalization
+    a. workers security groups are too open
 2. Convert to terraform module
 3. CI/CD Testing
 4. Remote lock and state file

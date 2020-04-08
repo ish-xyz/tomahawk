@@ -51,13 +51,13 @@ resource "tls_private_key" "workers_ssh" {
 }
 
 resource "aws_key_pair" "workers_ssh" {
-  key_name   = "kube-workers"
+  key_name   = "workers-${var.cluster_name}"
   public_key = tls_private_key.workers_ssh.public_key_openssh
 }
 
 resource "aws_launch_configuration" "worker" {
 
-  name_prefix = "kube-workers-"
+  name_prefix = "workers-"
 
   image_id        = var.workers_ami
   instance_type   = var.workers_type
@@ -72,7 +72,7 @@ resource "aws_launch_configuration" "worker" {
 }
 
 resource "aws_security_group" "workers" {
-  name   = "kube-workers"
+  name   = "workers-${var.cluster_name}"
   vpc_id = var.workers_vpc_id
 }
 
