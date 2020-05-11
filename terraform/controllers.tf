@@ -23,7 +23,7 @@ module "controllers" {
   # Bastion host configuration
   bastion_count   = 1
   bastion_type    = "t2.micro"
-  bastion_user    = "centos"
+  bastion_user    = "ec2-user"
   bastion_port    = 22
   bastion_subnets = module.network.public_subnets
 

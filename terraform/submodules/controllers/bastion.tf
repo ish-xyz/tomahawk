@@ -24,6 +24,29 @@ resource "aws_instance" "bastion" {
     Environment = var.environment
     Cluster     = var.cluster_name
   }
+
+  connection {
+    type                = "ssh"
+    timeout             = "7m"
+    user                = var.bastion_user
+    private_key         = tls_private_key.bastion_ssh.private_key_pem
+    host                = self.public_ip
+  }
+
+  # Import bootstrap script
+  provisioner "file" {
+    source      = "${path.module}/bin/bastion_host.sh"
+    destination = "~/bootstrap/bastion_host.sh"
+  }
+
+  # Run bootstrap script
+  provisioner "remote-exec" {
+    inline = [
+      "chmod +x ~/bootstrap/*.sh",
+      "cd ~/bootstrap && sudo ./bastion_host.sh",
+      "rm -rf ~/bootstrap"
+    ]
+  }
 }
 
 resource "aws_security_group" "bastion" {
@@ -31,16 +54,50 @@ resource "aws_security_group" "bastion" {
   vpc_id = var.vpc_id
 }
 
-resource "aws_security_group_rule" "bastion_allow_egress_all" {
+resource "aws_security_group_rule" "bastion_allow_egress_http" {
   type             = "egress"
-  to_port          = 0
-  from_port        = 0
-  protocol         = "-1"
+  to_port          = 80
+  from_port        = 80
+  protocol         = "tcp"
   cidr_blocks      = ["0.0.0.0/0"]
   ipv6_cidr_blocks = ["::/0"]
 
   security_group_id = aws_security_group.bastion.id
 }
+
+resource "aws_security_group_rule" "allow_egress_ssh" {
+  type             = "egress"
+  to_port          = 22
+  from_port        = 22
+  protocol         = "tcp"
+  cidr_blocks      = ["0.0.0.0/0"]
+  ipv6_cidr_blocks = ["::/0"]
+
+  security_group_id = aws_security_group.bastion.id
+}
+
+resource "aws_security_group_rule" "allow_egress_https" {
+  type             = "egress"
+  to_port          = 443
+  from_port        = 443
+  protocol         = "tcp"
+  cidr_blocks      = ["0.0.0.0/0"]
+  ipv6_cidr_blocks = ["::/0"]
+
+  security_group_id = aws_security_group.bastion.id
+}
+
+resource "aws_security_group_rule" "allow_egress_dns" {
+  type             = "egress"
+  to_port          = 53
+  from_port        = 53
+  protocol         = "udp"
+  cidr_blocks      = ["0.0.0.0/0"]
+  ipv6_cidr_blocks = ["::/0"]
+
+  security_group_id = aws_security_group.bastion.id
+}
+
 
 resource "aws_security_group_rule" "bastion_allow_ssh_ext" {
   type        = "ingress"

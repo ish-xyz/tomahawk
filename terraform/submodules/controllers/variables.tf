@@ -193,5 +193,5 @@ variable "controllers_ami" {
 variable "bastion_ami" {
   description = "AMI used for bastion host - currently the only one supported"
   type        = string
-  default     = "ami-0334a7a72f69e4d0f"
+  default     = "ami-06ce3edf0cff21f07"
 }

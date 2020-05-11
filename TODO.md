@@ -2,9 +2,9 @@
 
 *Release*
 * CI/CD Testing (test-infra/kubetest)
+* Configure AWS as cloud provider on kubelet
 * Configure workers LB
 * External CLI: Remote state file and lock, init, create-cluster, migrate-cluster, upgrade-cluster
-
 * Remove associate_public_ip on controllers and implements SSH Bastion Host (Pay attentions to the terraform provisioners)
     * Fix controllers security group to enable only ingress from the NLB, Bastion Host and other controllers
 * Controllers bootstrap key rotation or user input key

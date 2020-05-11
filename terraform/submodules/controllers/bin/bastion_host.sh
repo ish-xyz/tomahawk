@@ -12,8 +12,6 @@
 # Date: Wed Apr 15 20:39:53 UTC 2020
 # Description:
 ## Configure Bastion host for Amazon Linux 2 & CentOS 8 Server Minimal
-## AWS tests:
-## AMI -> ami-06ce3edf0cff21f07
 
 set -e
 
@@ -251,7 +249,7 @@ main() {
         iptables_setup
     fi
 
-    echo "Updating via YUM."
+    echo "Updating via YUM..."
     yum update -y
 
     mkdir ${bhb_hidden_dir}
