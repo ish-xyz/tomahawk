@@ -33,6 +33,13 @@ resource "aws_instance" "bastion" {
     host                = self.public_ip
   }
 
+  # Make sure destination directory exists
+  provisioner "remote-exec" {
+    inline = [
+      "mkdir ~/bootstrap"
+    ]
+  }
+
   # Import bootstrap script
   provisioner "file" {
     source      = "${path.module}/bin/bastion_host.sh"
@@ -46,6 +53,7 @@ resource "aws_instance" "bastion" {
       "cd ~/bootstrap && sudo ./bastion_host.sh",
       "rm -rf ~/bootstrap"
     ]
+    on_failure = continue
   }
 }
 
