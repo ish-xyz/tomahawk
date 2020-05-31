@@ -127,6 +127,7 @@ resource "aws_instance" "controllers" {
   connection {
     type                = "ssh"
     timeout             = "7m"
+    agent               = false
     bastion_host        = aws_instance.bastion.0.public_ip # TODO
     bastion_user        = var.bastion_user
     bastion_private_key = tls_private_key.bastion_ssh.private_key_pem
@@ -170,6 +171,7 @@ resource "null_resource" "import_bootstrap_files" {
   connection {
     type                = "ssh"
     timeout             = "7m"
+    agent               = false
     bastion_host        = aws_instance.bastion.0.public_ip # TODO
     bastion_user        = var.bastion_user
     bastion_private_key = tls_private_key.bastion_ssh.private_key_pem
@@ -283,6 +285,7 @@ resource "null_resource" "bootstrap-controllers" {
   connection {
     type                = "ssh"
     timeout             = "7m"
+    agent               = false
     bastion_host        = aws_instance.bastion.0.public_ip # TODO
     bastion_user        = var.bastion_user
     bastion_private_key = tls_private_key.bastion_ssh.private_key_pem

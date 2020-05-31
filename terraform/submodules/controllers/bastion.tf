@@ -28,6 +28,7 @@ resource "aws_instance" "bastion" {
   connection {
     type                = "ssh"
     timeout             = "7m"
+    agent               = false
     user                = var.bastion_user
     private_key         = tls_private_key.bastion_ssh.private_key_pem
     host                = self.public_ip
