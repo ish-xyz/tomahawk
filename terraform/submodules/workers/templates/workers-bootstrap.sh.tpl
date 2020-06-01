@@ -258,7 +258,6 @@ EOF
             --container-runtime-endpoint=unix:///var/run/containerd/containerd.sock \\
             --image-pull-progress-deadline=2m \\
             --kubeconfig=$${kubelet_config} \\
-            --cloud-provider="aws" \\
             --network-plugin=cni \\
             --register-node=true \\
             --v=2

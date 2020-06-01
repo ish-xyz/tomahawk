@@ -5,12 +5,10 @@
 * Configure AWS as cloud provider on kubelet
 * Configure workers LB
 * External CLI: Remote state file and lock, init, create-cluster, migrate-cluster, upgrade-cluster
-* Remove associate_public_ip on controllers and implements SSH Bastion Host (Pay attentions to the terraform provisioners)
-    * Fix controllers security group to enable only ingress from the NLB, Bastion Host and other controllers
 * Controllers bootstrap key rotation or user input key
 * Controllers logs to a central logging (TBD)
 * Rework security groups workers
-* AWS Security assesment
+* AWS Security review
 * AMI Security hardening (security Groups, subnets etc)
 
 * Move binaries to a private repository
